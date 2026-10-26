@@ -28,6 +28,7 @@ anything. Run it on every changed file.
 | No capturing anonymous functions | `@(l) f(l, x)` | pass the data explicitly | RunMat compile error |
 | No index assignment into logical arrays | `keep(j) = false` | numeric masks and `find` | RunMat: "Index assignment only for tensors" |
 | Index with a row of indices from `find` | `X(:, keep)` | `X(:, keep(:)')` | RunMat's checker overflows its stack on some uses |
+| Assign through a vector of indices from `unique` | `P(:, cls + 1) = p` | loop: `P(:, cls(i) + 1) = p(:, i)` | RunMat's checker overflows its stack |
 | Avoid reserved words | `methods` as a variable | `methods_used` | RunMat parses it as a classdef keyword |
 | Space around `.^` on literals | `2.^(0:2)'` | `2 .^ ((0:2)')` | RunMat reads `2.` as a number |
 | `unique` on string arrays only | `unique(cellstr)` | `unique(string(c))` | RunMat |

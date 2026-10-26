@@ -8,6 +8,9 @@ Fixtures (in tests/fixtures/<case>/):
             Xtr, ytr, Xte -> logits (+ intermediate E1, R for debugging)
   clf_*   : full TabICLClassifier.fit / predict_proba on a dataset, with the
             ensemble configuration exported so MATLAB can replay it exactly
+  forward_many : raw forward with more classes than max_classes (mixed-radix
+            column embedding + hierarchical ICL): E1, R, logits and proba
+  clf_many : classifier case with 15 classes
 """
 
 import struct
@@ -15,7 +18,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from sklearn.datasets import load_breast_cancer, load_iris, load_wine
+from sklearn.datasets import load_breast_cancer, load_iris, load_wine, make_classification
 from sklearn.model_selection import train_test_split
 
 from tabicl import TabICLClassifier
@@ -60,6 +63,40 @@ def forward_case(clf):
     print("forward:", logits.shape)
 
 
+def forward_many_case(clf, n_classes=26):
+    """Forward pass with more classes than the model supports natively."""
+    out = ROOT / "forward_many"
+    out.mkdir(parents=True, exist_ok=True)
+    rng = np.random.default_rng(1)
+    n_train, n_test, H = 5 * n_classes, 20, 6
+    y_all = np.concatenate([np.arange(n_train) % n_classes, rng.integers(0, n_classes, n_test)])
+    rng.shuffle(y_all[:n_train])
+    centroids = 1.5 * rng.standard_normal((n_classes, H))
+    X = centroids[y_all] + rng.standard_normal((n_train + n_test, H))
+    y = y_all[:n_train]
+    assert len(np.unique(y)) == n_classes > clf.model_.max_classes
+
+    model = clf.model_
+    cfg = clf.inference_config_
+    Xt = torch.from_numpy(X).float()[None]
+    yt = torch.from_numpy(y).float()[None]
+    with torch.no_grad():
+        emb = model.col_embedder(Xt.clone(), y_train=yt, mgr_config=cfg.COL_CONFIG)  # mixed-radix ensemble
+        reps = model.row_interactor(emb.clone(), mgr_config=cfg.ROW_CONFIG)
+        # hierarchical classification: T * log(p + 1e-6) and p
+        logits = model(Xt, yt, return_logits=True, inference_config=cfg)
+        proba = model(Xt, yt, return_logits=False, inference_config=cfg)
+
+    write_matrix(out / "Xtr.bin", X[:n_train])
+    write_matrix(out / "ytr.bin", y)
+    write_matrix(out / "Xte.bin", X[n_train:])
+    write_matrix(out / "E1.bin", emb[0, :, 4, :].numpy())
+    write_matrix(out / "R.bin", reps[0].numpy())
+    write_matrix(out / "logits.bin", logits[0].numpy())
+    write_matrix(out / "proba.bin", proba[0].numpy())
+    print("forward_many:", proba.shape)
+
+
 def clf_case(name, X, y, n_estimators=4, test_size=0.3):
     out = ROOT / name
     out.mkdir(parents=True, exist_ok=True)
@@ -101,6 +138,14 @@ def main():
 
     bc = load_breast_cancer()
     clf_case("clf_breast_cancer", bc.data, bc.target)
+
+    # more classes than max_classes = 10
+    forward_many_case(clf)
+    X, y = make_classification(
+        n_samples=300, n_features=8, n_informative=6, n_redundant=0, n_classes=15,
+        n_clusters_per_class=1, class_sep=2.0, random_state=0,
+    )
+    clf_case("clf_many", X, y)
 
 
 if __name__ == "__main__":
