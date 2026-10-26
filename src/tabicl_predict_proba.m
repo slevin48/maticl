@@ -35,11 +35,20 @@ for m = 1:numel(norm_idx)
     Xte_m = Xte.(method);
     f = feat(m, :) + 1;
     c = cls(m, :);
-    logits = tabicl_forward(M, Xtr_m(:, f), c(ytr + 1), Xte_m(:, f));
+    [logits, hp] = tabicl_forward(M, Xtr_m(:, f), c(ytr + 1), Xte_m(:, f));
     % undo the class permutation: column i is the logit of original class i
-    out = logits(:, c + 1);
-    if ~average_logits
-        out = tabicl_softmax(out / T, 2);
+    if isempty(hp)
+        out = logits(:, c + 1);
+        if ~average_logits
+            out = tabicl_softmax(out / T, 2);
+        end
+    else
+        % many classes: the model returns hierarchical probabilities, as
+        % T * log(p + 1e-6) when averaging logits
+        out = hp(:, c + 1);
+        if average_logits
+            out = T * log(out + 1e-6);
+        end
     end
     avg = avg + out;
 end

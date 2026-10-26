@@ -1,7 +1,8 @@
 function clf = tabicl_fit(X, y, varargin)
 %TABICL_FIT Fit a TabICL classifier (in-context: stores the preprocessed data).
 %   clf = TABICL_FIT(X, y) with X an [n x p] numeric matrix (NaN allowed)
-%   and y a vector of numeric labels, a string array or a cellstr.
+%   and y a vector of numeric labels, a string array or a cellstr, with
+%   any number of classes.
 %
 %   Name-value options (defaults follow tabicl.TabICLClassifier):
 %     'Model'              struct from TABICL_LOAD (loaded on demand if empty)
@@ -61,11 +62,9 @@ if iscell(y)
 end
 [classes, ~, yi] = unique(y(:));
 yi = yi(:) - 1;
+% more than M.cfg.max_classes classes use the many-class strategy (mixed-radix
+% column embedding, hierarchical ICL), see tabicl_col_embed and tabicl_icl
 C = numel(classes);
-if C > M.cfg.max_classes
-    error('tabicl:fit', ['%d classes found but only %d are supported (the hierarchical ' ...
-        'many-class strategy of the Python package is not implemented).'], C, M.cfg.max_classes);
-end
 
 % drop constant features
 keep = non_constant(X);

@@ -81,6 +81,13 @@ For each feature column `j`:
    the *training* rows (`mab1`, with QASSMax), then all `T` rows attend to
    the inducing points (`mab2`).
 
+**More than 10 classes** (`max_classes`; mixed-radix ensembling,
+`ColEmbedding._compute_mixed_radix_bases`): the label is written in a mixed
+radix with `D = ceil(log C / log 10)` balanced digits, each with at most 10
+values (26 classes: bases `[6, 6]`, digits `y // 6` and `y mod 6`). Step 3
+runs once per digit, with that digit as the target, and the `D` results are
+averaged.
+
 The result is `E`, `[T x d x H]`: one embedding per cell. Columns filled
 with the skip value -100 (the 4 reserved CLS slots in Python) are not
 computed. They are replaced by CLS tokens in the next stage.
@@ -99,6 +106,21 @@ Training rows get `onehot(y) * yW + yb` added, then 12 blocks run in which
 every row attends only to the training rows (`train_size` masking), with
 QASSMax. A final LayerNorm and a 2-layer GELU decoder (512 → 1024 → 10)
 produce logits for the test rows, truncated to the `C` classes present.
+
+**More than 10 classes** (hierarchical classification,
+`ICLearning._fit_hierarchical` / `_predict_hierarchical`): the sorted classes
+are split into `min(ceil(C / 10), 10)` balanced groups of consecutive classes
+(26 classes: 9, 9, 8). At this node, the transformer above is run with the
+group index as the label, which gives group probabilities
+`softmax(logits / 0.9)`. Each group becomes a child node that holds only its
+own training rows and is split again if it still has more than 10 classes,
+otherwise it is a leaf that classifies among its classes directly. A class
+probability is the product of the probabilities along its path.
+`tabicl_icl` walks this tree breadth-first with an explicit queue. As in
+PyTorch, the node softmaxes always use temperature 0.9, and the stage returns
+`0.9 * log(p + 1e-6)` as logits and also `p` itself. The ensemble then
+averages `T * log(p + 1e-6)` (or `p` with `'AverageLogits', false`) in place
+of the logits.
 
 `tabicl_forward(M, Xtr, ytr, Xte)` chains the three stages for one
 already-preprocessed table, matching `TabICL.forward(X, y_train)` in
@@ -137,9 +159,6 @@ pass its members through the `'Ensemble'` option, as the tests do.
 ## Not ported
 
 * `TabICLRegressor` (quantile regression head).
-* More than 10 classes: Python uses mixed-radix label ensembling in the
-  column embedder and hierarchical classification in the ICL stage.
-  `tabicl_fit` raises an error instead.
 * DataFrame inputs with categorical/string columns (ordinal encoding); pass
   numeric matrices.
 * KV caching, GPU / mixed precision, fine-tuning and the time-series

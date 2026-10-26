@@ -32,10 +32,14 @@ same ensemble):
 | iris: max probability error / accuracy (Python 1.000) | 2.1e-6 / 1.000 | 2.1e-6 / 1.000 |
 | wine: max probability error / accuracy (Python 1.000) | 3.8e-7 / 1.000 | 3.8e-7 / 1.000 |
 | breast cancer: max probability error / accuracy (Python 0.9532) | 3.8e-6 / 0.9532 | 3.8e-6 / 0.9532 |
-| full test suite wall time | 38 s | 21 min |
+| 26 classes, raw forward pass: max probability error | 7.5e-6 | 7.5e-6 |
+| 15 classes (synthetic): max probability error / accuracy (Python 0.8889) | 3.5e-6 / 0.8889 | 3.4e-6 / 0.8889 |
+| full test suite wall time | 47 s | 21 min + 25 min (many-class tests) |
 
 The remaining differences are float32 rounding (PyTorch computes in float32,
-maticl in double). Predicted labels agree 100% on all three datasets.
+maticl in double). Predicted labels agree 100% on all datasets. The last two
+rows use more classes than the checkpoint's 10, which goes through the
+many-class strategy (see below).
 
 ## Setup
 
@@ -70,7 +74,12 @@ yhat  = tabicl_predict(clf, Xtest);
 ```
 
 * `X` is a numeric matrix; `NaN` values are mean-imputed.
-* `y` can be numeric, a string array or a cellstr, with at most 10 classes.
+* `y` can be numeric, a string array or a cellstr, with any number of
+  classes. Beyond 10 (the checkpoint's limit), maticl uses the same
+  many-class strategy as Python: mixed-radix label ensembling in the column
+  embedding and hierarchical classification in the ICL stage. Each ensemble
+  member then costs one column-embedding pass per label digit and one ICL
+  pass per tree node (2 and 4 for 26 classes).
 * `example.m` is a two-moons demo.
 
 `tabicl_fit` options (defaults follow `TabICLClassifier`):
@@ -88,9 +97,10 @@ yhat  = tabicl_predict(clf, Xtest);
 | `'Seed'` | 42 | RNG seed for the permutations (`[]` keeps the current state) |
 | `'Ensemble'` | | explicit members to replay, see `tests/test_classifier.m` |
 
-Lower-level entry points are `tabicl_forward(M, Xtr, ytr, Xte)` (raw logits
-on an already-preprocessed table) and the three stages `tabicl_col_embed`,
-`tabicl_row_interact` and `tabicl_icl`.
+Lower-level entry points are `[logits, proba] = tabicl_forward(M, Xtr, ytr, Xte)`
+(raw logits on an already-preprocessed table; `proba` holds the hierarchical
+class probabilities when there are more than 10 classes, `[]` otherwise) and
+the three stages `tabicl_col_embed`, `tabicl_row_interact` and `tabicl_icl`.
 
 ## Running the tests
 
@@ -135,8 +145,7 @@ example.m   minimal demo
 
 ## Limitations
 
-* Classification only, at most 10 classes (no regressor, no hierarchical
-  many-class mode).
+* Classification only (no regressor).
 * Numeric inputs only: encode categorical columns yourself.
 * CPU, double precision. Nelson takes about 2 s per ensemble member on a
   400-row, 30-feature table. RunMat is currently about 30× slower because
