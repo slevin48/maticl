@@ -27,9 +27,9 @@ same ensemble):
 |---|---|---|
 | raw forward pass, max logit error | 1.9e-5 | 1.9e-5 |
 | iris: max probability error / accuracy (Python 1.000) | 2.1e-6 / 1.000 | 2.1e-6 / 1.000 |
-| wine: max probability error / accuracy (Python 1.000) | 3.8e-7 / 1.000 | pending |
-| breast cancer: max probability error / accuracy (Python 0.9532) | 3.8e-6 / 0.9532 | pending |
-| full test suite wall time | 38 s | pending |
+| wine: max probability error / accuracy (Python 1.000) | 3.8e-7 / 1.000 | 3.8e-7 / 1.000 |
+| breast cancer: max probability error / accuracy (Python 0.9532) | 3.8e-6 / 0.9532 | 3.8e-6 / 0.9532 |
+| full test suite wall time | 38 s | 21 min |
 
 The remaining differences are float32 rounding (PyTorch computes in float32,
 maticl in double). Predicted labels agree 100% on all three datasets.
@@ -132,7 +132,7 @@ example.m   minimal demo
   many-class mode).
 * Numeric inputs only: encode categorical columns yourself.
 * CPU, double precision. Nelson takes about 2 s per ensemble member on a
-  400-row, 30-feature table. RunMat is currently about 50× slower because
+  400-row, 30-feature table. RunMat is currently about 30× slower because
   of its matrix-multiply speed and per-statement overhead (see
   docs/portability.md).
 
