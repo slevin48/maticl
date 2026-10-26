@@ -1,0 +1,138 @@
+# maticl: TabICL in pure MATLAB
+
+A port of [TabICL](https://github.com/soda-inria/tabicl) v2, the tabular
+in-context-learning foundation model from Inria's Soda team, to plain MATLAB
+with no toolboxes. Give it a labelled training table and it classifies new
+rows in a single forward pass, with no training or tuning. It reproduces the
+Python `TabICLClassifier`, including the preprocessing and ensembling, and is
+tested on three runtimes:
+
+* [MATLAB](https://www.mathworks.com/products/matlab.html)
+* [Nelson](https://nelson-lang.github.io/nelson-website/) 2.0
+* [RunMat](https://runmat.com) 0.6.2
+
+```matlab
+addpath src
+M   = tabicl_load();                           % pretrained weights, once
+clf = tabicl_fit(Xtrain, ytrain, 'Model', M);  % "fit" = store context
+[yhat, proba] = tabicl_predict(clf, Xtest);
+```
+
+## Results
+
+Compared with the reference Python package (`tabicl` 2.2.0, same checkpoint,
+same ensemble):
+
+| test | Nelson 2.0 | RunMat 0.6.2 |
+|---|---|---|
+| raw forward pass, max logit error | 1.9e-5 | 1.9e-5 |
+| iris: max probability error / accuracy (Python 1.000) | 2.1e-6 / 1.000 | 2.1e-6 / 1.000 |
+| wine: max probability error / accuracy (Python 1.000) | 3.8e-7 / 1.000 | pending |
+| breast cancer: max probability error / accuracy (Python 0.9532) | 3.8e-6 / 0.9532 | pending |
+| full test suite wall time | 38 s | pending |
+
+The remaining differences are float32 rounding (PyTorch computes in float32,
+maticl in double). Predicted labels agree 100% on all three datasets.
+
+## Setup
+
+The weights are not in the repository (110 MB). They are exported once from
+the official Hugging Face checkpoint:
+
+```sh
+uv venv .venv-ref -p 3.12
+uv pip install --python .venv-ref/bin/python tabicl
+.venv-ref/bin/python tools/export_weights.py   # -> weights/tabicl-classifier-v2.{idx,bin}
+```
+
+After that Python is no longer needed.
+
+## Usage
+
+```matlab
+addpath src
+M = tabicl_load();                 % or tabicl_load('path/to/prefix')
+
+clf = tabicl_fit(X, y, 'Model', M, 'NumEstimators', 8);
+proba = tabicl_predict_proba(clf, Xtest);   % columns follow clf.classes
+yhat  = tabicl_predict(clf, Xtest);
+```
+
+* `X` is a numeric matrix; `NaN` values are mean-imputed.
+* `y` can be numeric, a string array or a cellstr, with at most 10 classes.
+* `example.m` is a two-moons demo.
+
+`tabicl_fit` options (defaults follow `TabICLClassifier`):
+
+| option | default | meaning |
+|---|---|---|
+| `'Model'` | loaded on demand | struct from `tabicl_load`; pass it to avoid reloading |
+| `'NumEstimators'` | 8 | ensemble size |
+| `'NormMethods'` | `{'none', 'power'}` | normalisations cycled through the ensemble |
+| `'FeatShuffle'` | `'latin'` | feature permutations: `latin`, `shift`, `random`, `none` |
+| `'ClassShuffle'` | `'shift'` | class permutations, same choices |
+| `'OutlierThreshold'` | 4 | in standard deviations |
+| `'SoftmaxTemperature'` | 0.9 | |
+| `'AverageLogits'` | true | average logits (else probabilities) over members |
+| `'Seed'` | 42 | RNG seed for the permutations (`[]` keeps the current state) |
+| `'Ensemble'` | | explicit members to replay, see `tests/test_classifier.m` |
+
+Lower-level entry points are `tabicl_forward(M, Xtr, ytr, Xte)` (raw logits
+on an already-preprocessed table) and the three stages `tabicl_col_embed`,
+`tabicl_row_interact` and `tabicl_icl`.
+
+## Running the tests
+
+The fixtures in `tests/fixtures` (inputs and PyTorch outputs) are committed,
+so the tests only need the exported weights:
+
+```sh
+nelson-cli -f tests/run_tests.m
+cd "$(mktemp -d)" && runmat /path/to/maticl/tests/run_tests.m
+```
+
+```matlab
+run('tests/run_tests.m')          % MATLAB
+```
+
+* RunMat compiles every `.m` file in the working directory, so start it from
+  a directory without unrelated `.m` files.
+* `tools/make_reference.py` regenerates the fixtures from the Python package.
+
+## Documentation
+
+* [docs/architecture.md](docs/architecture.md): the model and the pipeline,
+  stage by stage, mapped to the PyTorch sources.
+* [docs/portability.md](docs/portability.md): the MATLAB subset that runs on
+  all three runtimes, the RunMat 0.6.2 workarounds, and performance notes.
+
+## Layout
+
+```
+src/        the implementation (19 functions)
+tests/      run_tests.m, test_forward.m, test_classifier.m, fixtures/
+tools/      export_weights.py, make_reference.py (PyTorch side)
+docs/       architecture and portability notes
+example.m   minimal demo
+```
+
+## Limitations
+
+* Classification only, at most 10 classes (no regressor, no hierarchical
+  many-class mode).
+* Numeric inputs only: encode categorical columns yourself.
+* CPU, double precision. Nelson takes about 2 s per ensemble member on a
+  400-row, 30-feature table. RunMat is currently about 50× slower because
+  of its matrix-multiply speed and per-statement overhead (see
+  docs/portability.md).
+
+## License and credits
+
+BSD 3-Clause, see [LICENSE](LICENSE). maticl is a derivative of
+[TabICL](https://github.com/soda-inria/tabicl), © 2025 Soda team @ Inria.
+If you use it, please cite the TabICL papers:
+
+* Qu, Holzmüller, Varoquaux, Le Morvan, *TabICL: A Tabular Foundation Model
+  for In-Context Learning on Large Data*, ICML 2025.
+* the TabICLv2 paper for the v2 checkpoint used here (see the
+  [TabICL README](https://github.com/soda-inria/tabicl#citation)).

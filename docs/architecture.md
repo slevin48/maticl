@@ -1,0 +1,138 @@
+# Architecture
+
+This page follows a prediction through maticl and points to the PyTorch
+module that each MATLAB function reproduces (`tabicl` 2.2.0, checkpoint
+`tabicl-classifier-v2-20260212.ckpt`). Shapes use MATLAB conventions: `n`
+training rows, `m` test rows, `T = n + m`, `H` features, `C` classes,
+`d = 128` (embedding size).
+
+```
+X, y ──► tabicl_fit ─────────────► clf (preprocessed training data + ensemble)
+              │ impute, drop constant columns, label-encode y
+              │ per norm method: tabicl_preprocess_fit
+              ▼
+Xtest ─► tabicl_predict_proba ─┬─► for each ensemble member:
+                               │     permute features / classes
+                               │     tabicl_forward ─► logits
+                               │     un-permute classes, accumulate
+                               └─► softmax(mean logits / 0.9)
+```
+
+## 1. Weights (`tools/export_weights.py`, `tabicl_load.m`)
+
+The checkpoint holds a config dict and a `state_dict` with 391 tensors and
+27.5M parameters. The exporter writes them as one little-endian float32 blob
+(`.bin`) plus a text index (`.idx`) with the config and, for each tensor, its
+name, offset and shape. The tensors are stored row-major, so reading a
+PyTorch `[out x in]` weight into a MATLAB `[in x out]` array gives the
+transpose directly, and every linear layer becomes `y = x * W + b`.
+
+`tabicl_load` turns this into a nested struct:
+
+| field | contents |
+|---|---|
+| `M.cfg` | checkpoint config (`embed_dim`, `col_nhead`, …) |
+| `M.col` | `inW` (3 × 128), `yW`, `b1..b3`, each holding `ind` (128 inducing points) and two attention blocks `mab1`, `mab2` |
+| `M.row` | `cls` (4 × 128), RoPE `freqs`, `b1..b3`, output LayerNorm |
+| `M.icl` | `yW`, `b1..b12`, final LayerNorm, decoder `dW1`, `dW2` |
+
+Each attention block `P` has the LayerNorms `n1*`/`n2*`, the feed-forward
+`W1`/`W2`, and `P.attn` with `Wq`, `Wk`, `Wv` (`in_proj_weight` split in
+three), `Wo` and, where the model uses it, the QASSMax MLPs in
+`P.attn.ssmax`.
+
+## 2. Building blocks
+
+* `tabicl_mab(P, x, kv, B, nh, freqs)` is a pre-norm transformer block
+  (`nn.TransformerEncoderLayer` with `norm_first=True`, as subclassed in
+  `_model/layers.py`): `x + Attn(LN1(x), LN1(kv))`, then
+  `+ FF(LN2(·))` with an exact GELU.
+* `tabicl_mha` is multi-head attention on **B independent groups** of
+  tokens. Activations are 2-D `[S*B x d]` matrices in which each group's
+  `S` tokens are contiguous, so projections are single matrix products.
+  For attention the matrix is reshaped to `[S x hd x B*nh]` pages and
+  multiplied with `pagemtimes` (`tabicl_bmm` falls back to a loop if it is
+  missing).
+* **QASSMax** (`_model/ssmax.py`, `qassmax-mlp-elementwise`): before the dot
+  product, queries are scaled as
+  `q .* base_mlp(log n) .* (1 + tanh(query_mlp(q)))`, where `n` is the
+  number of keys. It is used in the first attention of every induced block
+  and in every ICL block.
+* **RoPE** (`_model/rope.py`, non-interleaved v2 variant): head dimensions are
+  split into halves and rotated by the token position inside the row.
+
+## 3. Column embedding (`tabicl_col_embed.m` ← `_model/embedding.py`)
+
+For each feature column `j`:
+
+1. **Feature grouping** ("same", size 3): the input is the triple of columns
+   `j+1, j+2, j+4 (mod H)`, i.e. `(idx + 2^i) % H` in Python, mapped to 128
+   dimensions by `in_linear`.
+2. **Target awareness**: training rows get `onehot(y) * yW + yb` added.
+3. **Induced set transformer**, 3 blocks: the 128 inducing points attend to
+   the *training* rows (`mab1`, with QASSMax), then all `T` rows attend to
+   the inducing points (`mab2`).
+
+The result is `E`, `[T x d x H]`: one embedding per cell. Columns filled
+with the skip value -100 (the 4 reserved CLS slots in Python) are not
+computed. They are replaced by CLS tokens in the next stage.
+
+## 4. Row interaction (`tabicl_row_interact.m` ← `_model/interaction.py`)
+
+Each row becomes a sequence `[cls_1..cls_4, cell_1..cell_H]` of `S = H + 4`
+tokens, and rows are processed in chunks of 256 as `B` groups. There are 3
+blocks with RoPE; the last block only updates the 4 CLS tokens (queries =
+CLS, keys = whole row). After the output LayerNorm, the 4 CLS vectors are
+concatenated into the row representation `R`, `[T x 512]`.
+
+## 5. In-context learning (`tabicl_icl.m` ← `_model/learning.py`)
+
+Training rows get `onehot(y) * yW + yb` added, then 12 blocks run in which
+every row attends only to the training rows (`train_size` masking), with
+QASSMax. A final LayerNorm and a 2-layer GELU decoder (512 → 1024 → 10)
+produce logits for the test rows, truncated to the `C` classes present.
+
+`tabicl_forward(M, Xtr, ytr, Xte)` chains the three stages for one
+already-preprocessed table, matching `TabICL.forward(X, y_train)` in
+inference mode.
+
+## 6. Preprocessing (`tabicl_preprocess_*.m` ← `_sklearn/preprocessing.py`)
+
+`tabicl_fit` first imputes NaNs with the column mean (as `SimpleImputer`)
+and drops columns with a single distinct value (as `UniqueFeatureFilter`).
+Then, for each normalisation method:
+
+1. `CustomStandardScaler`: `(x - mean) / (std + 1e-6)`, clipped to ±100.
+2. `'power'`: scikit-learn `PowerTransformer(method='yeo-johnson')`, i.e. a
+   per-column Yeo-Johnson λ by maximum likelihood followed by standardisation.
+   `tabicl_yeojohnson_lambda` ports scipy's `yeojohnson_normmax`, including
+   its overflow-safe bounds and the bounded Brent search `fminbound`, so the
+   λ values agree to about 1e-8. `'none'` skips this step.
+3. `OutlierRemover`: bounds `mean ± 4 std`, re-estimated without the
+   outliers, then a soft clip `max(-log1p|x| + lo, x)`,
+   `min(log1p|x| + hi, x)`.
+
+## 7. Ensembling (`tabicl_fit.m`, `tabicl_predict_proba.m` ← `_sklearn/classifier.py`)
+
+As in `EnsembleGenerator`: feature permutations (a random Latin square by
+default) and class permutations (cyclic shifts) are paired, shuffled,
+combined with each normalisation method (`{'none', 'power'}`), and the first
+`NumEstimators` (8) members are kept. Member `k` sees permuted features and
+relabelled targets `cls(y + 1)`. Its logits are un-permuted with
+`logits(:, cls + 1)`, the logits are averaged over members, and the result
+is passed through `softmax(· / 0.9)`.
+
+MATLAB draws the permutations from its own RNG, so a native ensemble is a
+different (equally valid) sample than Python's. To reproduce Python exactly,
+pass its members through the `'Ensemble'` option, as the tests do.
+
+## Not ported
+
+* `TabICLRegressor` (quantile regression head).
+* More than 10 classes: Python uses mixed-radix label ensembling in the
+  column embedder and hierarchical classification in the ICL stage.
+  `tabicl_fit` raises an error instead.
+* DataFrame inputs with categorical/string columns (ordinal encoding); pass
+  numeric matrices.
+* KV caching, GPU / mixed precision, fine-tuning and the time-series
+  forecaster.
