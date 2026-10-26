@@ -1,5 +1,7 @@
 # maticl: TabICL in pure MATLAB
 
+[![tests](https://github.com/slevin48/maticl/actions/workflows/tests.yml/badge.svg)](https://github.com/slevin48/maticl/actions/workflows/tests.yml)
+
 A port of [TabICL](https://github.com/soda-inria/tabicl) v2, the tabular
 in-context-learning foundation model from Inria's Soda team, to plain MATLAB
 with no toolboxes. Give it a labelled training table and it classifies new
@@ -105,6 +107,9 @@ run('tests/run_tests.m')          % MATLAB
 
 * RunMat compiles every `.m` file in the working directory, so start it from
   a directory without unrelated `.m` files.
+* CI (`.github/workflows/tests.yml`) runs the suite on MATLAB and Nelson
+  1.17 (Ubuntu) on every push and pull request. RunMat, at about 20 minutes,
+  runs only on manual dispatch.
 * `tools/make_reference.py` regenerates the fixtures from the Python package.
 * `tools/export_weights.py` also regenerates `assets/tabicl-classifier-v2.idx`.
 
