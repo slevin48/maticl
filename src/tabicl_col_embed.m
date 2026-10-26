@@ -2,7 +2,7 @@ function E = tabicl_col_embed(col, cfg, X, ytr)
 %TABICL_COL_EMBED Target-aware column-wise embedding (set transformer).
 %   col : column-embedding weights (M.col), cfg : model config (M.cfg)
 %   X   : [T x H] table, the first numel(ytr) rows are training rows
-%   ytr : 0-based training labels
+%   ytr : 0-based training labels (scaled targets for the regressor)
 %   E   : [T x d x H] one embedding per cell
 [T, H] = size(X);
 n = numel(ytr);
@@ -11,7 +11,11 @@ nh = cfg.col_nhead;
 g = cfg.col_feature_group_size;
 skip = -100;
 
-yemb = tabicl_onehot(ytr, cfg.max_classes) * col.yW + col.yb;
+if cfg.max_classes == 0
+    yemb = ytr(:) * col.yW + col.yb;   % regressor: linear target encoder
+else
+    yemb = tabicl_onehot(ytr, cfg.max_classes) * col.yW + col.yb;
+end
 E = zeros(T, d, H);
 for j = 1:H
     % "same" feature grouping: column j sees features j+1, j+2, j+4 (mod H)

@@ -8,17 +8,22 @@ Fixtures (in tests/fixtures/<case>/):
             Xtr, ytr, Xte -> logits (+ intermediate E1, R for debugging)
   clf_*   : full TabICLClassifier.fit / predict_proba on a dataset, with the
             ensemble configuration exported so MATLAB can replay it exactly
+  reg_*   : full TabICLRegressor.fit / predict (mean, median, quantiles),
+            with its ensemble configuration
+
+Usage: python tools/make_reference.py [clf|reg]   (default: all fixtures)
 """
 
 import struct
+import sys
 from pathlib import Path
 
 import numpy as np
 import torch
-from sklearn.datasets import load_breast_cancer, load_iris, load_wine
+from sklearn.datasets import load_breast_cancer, load_diabetes, load_iris, load_wine
 from sklearn.model_selection import train_test_split
 
-from tabicl import TabICLClassifier
+from tabicl import TabICLClassifier, TabICLRegressor
 
 ROOT = Path(__file__).resolve().parents[1] / "tests" / "fixtures"
 
@@ -90,8 +95,43 @@ def clf_case(name, X, y, n_estimators=4, test_size=0.3):
     return clf
 
 
+def reg_case(name, X, y, n_estimators=4, test_size=0.3):
+    out = ROOT / name
+    out.mkdir(parents=True, exist_ok=True)
+    Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=test_size, random_state=0)
+    reg = TabICLRegressor(n_estimators=n_estimators, random_state=42, device="cpu")
+    reg.fit(Xtr, ytr)
+    # levels inside the predicted quantiles and in both exponential tails
+    alphas = [0.0005, 0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99, 0.9995]
+    pred = reg.predict(Xte, output_type=["mean", "median", "quantiles"], alphas=alphas)
+
+    eg = reg.ensemble_generator_
+    lines = []
+    for method, configs in eg.ensemble_configs_.items():
+        for feat, _ in configs:
+            lines.append(f"{method} | {' '.join(map(str, feat))}")
+    (out / "ensemble.txt").write_text("\n".join(lines) + "\n")
+
+    write_matrix(out / "Xtr.bin", Xtr)
+    write_matrix(out / "ytr.bin", ytr)
+    write_matrix(out / "Xte.bin", Xte)
+    write_matrix(out / "yte.bin", yte)
+    write_matrix(out / "alphas.bin", np.array(alphas)[None])
+    write_matrix(out / "mean.bin", pred["mean"])
+    write_matrix(out / "median.bin", pred["median"])
+    write_matrix(out / "quantiles.bin", pred["quantiles"])
+    rmse = float(np.sqrt(np.mean((pred["mean"] - yte) ** 2)))
+    print(f"{name}: train={len(ytr)} test={len(yte)} features={X.shape[1]} rmse={rmse:.4f}")
+
+
 def main():
+    which = sys.argv[1:] or ["clf", "reg"]
     torch.manual_seed(0)
+    if "reg" in which:
+        diabetes = load_diabetes()
+        reg_case("reg_diabetes", diabetes.data, diabetes.target)
+    if "clf" not in which:
+        return
     iris = load_iris()
     clf = clf_case("clf_iris", iris.data, iris.target)
     forward_case(clf)

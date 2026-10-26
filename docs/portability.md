@@ -30,6 +30,7 @@ anything. Run it on every changed file.
 | Index with a row of indices from `find` | `X(:, keep)` | `X(:, keep(:)')` | RunMat's checker overflows its stack on some uses |
 | Avoid reserved words | `methods` as a variable | `methods_used` | RunMat parses it as a classdef keyword |
 | Space around `.^` on literals | `2.^(0:2)'` | `2 .^ ((0:2)')` | RunMat reads `2.` as a number |
+| No literal `0` as second argument of `max`/`min` on a scalar | `min(max(t, 0), 1)` | `min(t, 1) * (t > 0)` | RunMat's checker reads it as a (zero-based) reduction dimension |
 | `unique` on string arrays only | `unique(cellstr)` | `unique(string(c))` | RunMat |
 | No `mfilename('fullpath')` inside functions | | `fileparts(which('tabicl_load'))` | RunMat returns the calling script's path |
 | No `fseek` | | read sequentially | RunMat has no `fseek` |
@@ -50,6 +51,8 @@ anything. Run it on every changed file.
   the working directory, and it reports the first error against whatever
   function you happened to call. Run RunMat from a directory without stray
   `.m` files, and use `runmat check` on individual files to find the real
-  culprit.
+  culprit. Local functions share that namespace too: two files on the path
+  with a local function of the same name (e.g. `read_ensemble`) silently
+  call the same one, so give local functions file-specific names.
 
 Nelson needs none of this, but nothing here costs anything there either.
