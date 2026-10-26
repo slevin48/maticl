@@ -1,6 +1,6 @@
 % EXAMPLE Minimal TabICL classification in MATLAB / Nelson / RunMat.
 here = fileparts(mfilename('fullpath'));
-addpath(fullfile(here, 'src'));
+addpath(fullfile(here, '..', 'src'));
 
 % two noisy interleaved half-moons
 rng(0);

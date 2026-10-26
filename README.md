@@ -1,7 +1,7 @@
 # maticl: TabICL in pure MATLAB
 
 [![tests](https://github.com/slevin48/maticl/actions/workflows/tests.yml/badge.svg)](https://github.com/slevin48/maticl/actions/workflows/tests.yml)
-[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=slevin48/maticl&file=example.m)
+[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=slevin48/maticl&file=examples/vibration_faults.m)
 
 A port of [TabICL](https://github.com/soda-inria/tabicl) v2, the tabular
 in-context-learning foundation model from Inria's Soda team, to plain MATLAB
@@ -101,7 +101,7 @@ yhat  = tabicl_predict(clf, Xtest);
   embedding and hierarchical classification in the ICL stage. Each ensemble
   member then costs one column-embedding pass per label digit and one ICL
   pass per tree node (2 and 4 for 26 classes).
-* `example.m` is a two-moons demo.
+* `examples/` has worked examples, see [Examples](#examples).
 
 `tabicl_fit` options (defaults follow `TabICLClassifier`):
 
@@ -145,6 +145,22 @@ hierarchical class probabilities) when there are more than 10 classes, or raw
 quantiles with the regressor. The three stages are `tabicl_col_embed`,
 `tabicl_row_interact` and `tabicl_icl`.
 
+## Examples
+
+Each script simulates its data, so it runs offline after the first weight
+download. They run in MATLAB and Nelson (plots are skipped in `nelson-cli`).
+
+| script | task | result |
+|---|---|---|
+| [`examples/vibration_faults.m`](examples/vibration_faults.m) | **Signal processing:** diagnose machine faults (imbalance, misalignment, bearing defect) from vibration recordings, via statistical, order and envelope-spectrum features computed with `fft` | 0.950 accuracy on 160 test recordings, 4 classes |
+| [`examples/load_forecasting.m`](examples/load_forecasting.m) | **Time series:** day-ahead hourly electricity-demand forecast with the regressor on calendar and lag features, with 90% prediction intervals | MAE 5.0 vs 9.1 for the seasonal-naive forecast |
+| [`examples/two_moons.m`](examples/two_moons.m) | minimal classification | 0.990 accuracy |
+
+The forecasting example turns forecasting into tabular regression, using
+only lags of at least 24 hours so that a whole day is predicted at once. The
+Python package also has a dedicated time-series forecaster, which is not
+ported. The intervals are conservative: they cover 98.8% of the test hours.
+
 ## Running the tests
 
 The fixtures in `tests/fixtures` (inputs and PyTorch outputs) are committed,
@@ -181,13 +197,13 @@ run('tests/run_tests.m')          % MATLAB
 ## Layout
 
 ```
-src/        the implementation (22 functions)
+src/        the implementation (25 functions)
 tests/      run_tests.m, test_forward.m, test_classifier.m, test_regressor.m,
             test_table.m, fixtures/
 tools/      export_weights.py, make_reference.py (PyTorch side)
 assets/     tensor indexes of the Hugging Face checkpoints
 docs/       architecture and portability notes
-example.m   minimal demo
+examples/   vibration fault diagnosis, load forecasting, two moons
 ```
 
 ## Limitations

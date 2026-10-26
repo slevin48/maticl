@@ -69,6 +69,9 @@ jobs:
       - uses: matlab-actions/run-command@v3
         with:
           command: addpath('src'); run('tests/run_tests.m')
+      - uses: matlab-actions/run-command@v3
+        with:
+          command: run('examples/two_moons.m'); run('examples/vibration_faults.m'); run('examples/load_forecasting.m')
 
   # maticl is developed on Nelson 2.0, but only 1.17 has a Linux build, and
   # it lacks strtok and runs out of memory: informational until 2.0 ships.
