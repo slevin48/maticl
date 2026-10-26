@@ -3,3 +3,4 @@ weights/
 __pycache__/
 .runmat/
 .DS_Store
+.claude/
