@@ -54,7 +54,7 @@ jobs:
   matlab:
     needs: weights
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: actions/cache/restore@v6
@@ -63,12 +63,17 @@ jobs:
           key: tabicl-weights-${{ env.CKPT_REV }}-${{ hashFiles('assets/tabicl-classifier-v2.idx') }}
           fail-on-cache-miss: true
       - uses: matlab-actions/setup-matlab@v3
+        with:
+          cache: true
       - uses: matlab-actions/run-command@v3
         with:
           command: addpath('src'); run('tests/run_tests.m')
 
+  # maticl is developed on Nelson 2.0, but only 1.17 has a Linux build, and
+  # it lacks strtok and runs out of memory: informational until 2.0 ships.
   nelson:
     if: github.event_name == 'workflow_dispatch'
+    continue-on-error: true
     needs: weights
     runs-on: ubuntu-24.04
     timeout-minutes: 20

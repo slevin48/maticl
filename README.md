@@ -109,8 +109,9 @@ run('tests/run_tests.m')          % MATLAB
 * RunMat compiles every `.m` file in the working directory, so start it from
   a directory without unrelated `.m` files.
 * CI (`.github/workflows/tests.yml`) runs the suite on MATLAB for every push
-  and pull request that changes a `.m` file. Nelson 1.17 (Ubuntu) and RunMat
-  (about 20 minutes) run only on manual dispatch.
+  and pull request that changes a `.m` file. Nelson and RunMat (about 20
+  minutes) run only on manual dispatch. The Nelson job is informational:
+  the only Linux build is 1.17, which fails (no `strtok`, out of memory).
 * `tools/make_reference.py` regenerates the fixtures from the Python package.
 * `tools/export_weights.py` also regenerates `assets/tabicl-classifier-v2.idx`.
 
