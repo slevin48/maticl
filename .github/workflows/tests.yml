@@ -1,14 +1,18 @@
 name: tests
 
 on:
+  # MATLAB runs automatically when a .m file changes; Nelson and RunMat only
+  # on demand (Actions tab > tests > Run workflow).
   push:
     branches: [main]
+    paths: ["**.m"]
   pull_request:
     branches: [main]
+    paths: ["**.m"]
   workflow_dispatch:
     inputs:
       runmat_version:
-        description: "RunMat version for the (slow, dispatch-only) RunMat job"
+        description: "RunMat version for the RunMat job"
         type: choice
         options: ["0.6.2", "latest"]
         default: "0.6.2"
@@ -64,6 +68,7 @@ jobs:
           command: addpath('src'); run('tests/run_tests.m')
 
   nelson:
+    if: github.event_name == 'workflow_dispatch'
     needs: weights
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -88,7 +93,7 @@ jobs:
           nelson-cli --version
       - run: nelson-cli --quiet -f tests/run_tests.m
 
-  # About 20 minutes, so only on demand (Actions tab > tests > Run workflow).
+  # About 20 minutes.
   runmat:
     if: github.event_name == 'workflow_dispatch'
     needs: weights
