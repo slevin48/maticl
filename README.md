@@ -9,7 +9,7 @@ rows in a single forward pass, with no training or tuning. It reproduces the
 Python `TabICLClassifier`, including the preprocessing and ensembling, and is
 tested on three runtimes:
 
-* [MATLAB](https://www.mathworks.com/products/matlab.html)
+* [MATLAB](https://www.mathworks.com/products/matlab.html), tested manually in MATLAB Online
 * [Nelson](https://nelson-lang.github.io/nelson-website/) 2.0
 * [RunMat](https://runmat.com) 0.6.2
 
