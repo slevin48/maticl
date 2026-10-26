@@ -2,7 +2,7 @@ function E = tabicl_col_embed(col, cfg, X, ytr)
 %TABICL_COL_EMBED Target-aware column-wise embedding (set transformer).
 %   col : column-embedding weights (M.col), cfg : model config (M.cfg)
 %   X   : [T x H] table, the first numel(ytr) rows are training rows
-%   ytr : 0-based training labels
+%   ytr : 0-based training labels (scaled targets for the regressor)
 %   E   : [T x d x H] one embedding per cell
 %
 %   With more than cfg.max_classes classes, labels are split into
@@ -16,14 +16,19 @@ nh = cfg.col_nhead;
 g = cfg.col_feature_group_size;
 skip = -100;
 
-% one target embedding per mixed-radix digit: yemb(:, :, k)
-bases = mixed_radix_bases(max(ytr) + 1, cfg.max_classes);
-D = numel(bases);
-yemb = zeros(n, d, D);
-for k = 1:D
-    divisor = prod(bases(k+1:end));
-    digit = mod(floor(ytr / divisor), bases(k));
-    yemb(:, :, k) = tabicl_onehot(digit, cfg.max_classes) * col.yW + col.yb;
+if cfg.max_classes == 0
+    yemb = ytr * col.yW + col.yb;   % regressor: linear target encoder
+    D = 1;
+else
+    % one target embedding per mixed-radix digit: yemb(:, :, k)
+    bases = mixed_radix_bases(max(ytr) + 1, cfg.max_classes);
+    D = numel(bases);
+    yemb = zeros(n, d, D);
+    for k = 1:D
+        divisor = prod(bases(k+1:end));
+        digit = mod(floor(ytr / divisor), bases(k));
+        yemb(:, :, k) = tabicl_onehot(digit, cfg.max_classes) * col.yW + col.yb;
+    end
 end
 
 E = zeros(T, d, H);

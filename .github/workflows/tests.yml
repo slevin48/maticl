@@ -27,10 +27,9 @@ concurrency:
 env:
   # Hugging Face revision of the checkpoint, as in src/tabicl_load.m
   CKPT_REV: 4dcd344ece2c00be9e831fdd35bed57b5ad83e19
-  CKPT_NAME: tabicl-classifier-v2-20260212
 
 jobs:
-  # Download the 110 MB checkpoint once and cache weights/ for the other jobs,
+  # Download the two 110 MB checkpoints once and cache weights/ for the other jobs,
   # laid out exactly as tabicl_load() would leave it.
   weights:
     runs-on: ubuntu-latest
@@ -41,15 +40,17 @@ jobs:
         uses: actions/cache@v6
         with:
           path: weights
-          key: tabicl-weights-${{ env.CKPT_REV }}-${{ hashFiles('assets/tabicl-classifier-v2.idx') }}
+          key: tabicl-weights-${{ env.CKPT_REV }}-${{ hashFiles('assets/*.idx') }}
       - if: steps.cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p weights
-          curl -fsSL --retry 3 -o weights/ckpt.zip \
-            "https://huggingface.co/jingang/TabICL/resolve/$CKPT_REV/$CKPT_NAME.ckpt"
-          unzip -q weights/ckpt.zip -d "weights/$CKPT_NAME"
-          rm weights/ckpt.zip
-          test -f "weights/$CKPT_NAME/refactored_model/data/0"
+          for name in tabicl-classifier-v2-20260212 tabicl-regressor-v2-20260212; do
+            curl -fsSL --retry 3 -o weights/ckpt.zip \
+              "https://huggingface.co/jingang/TabICL/resolve/$CKPT_REV/$name.ckpt"
+            unzip -q weights/ckpt.zip -d "weights/$name"
+            rm weights/ckpt.zip
+            ls "weights/$name"/*/data/0
+          done
 
   matlab:
     needs: weights
@@ -60,7 +61,7 @@ jobs:
       - uses: actions/cache/restore@v6
         with:
           path: weights
-          key: tabicl-weights-${{ env.CKPT_REV }}-${{ hashFiles('assets/tabicl-classifier-v2.idx') }}
+          key: tabicl-weights-${{ env.CKPT_REV }}-${{ hashFiles('assets/*.idx') }}
           fail-on-cache-miss: true
       - uses: matlab-actions/setup-matlab@v3
         with:
@@ -86,7 +87,7 @@ jobs:
       - uses: actions/cache/restore@v6
         with:
           path: weights
-          key: tabicl-weights-${{ env.CKPT_REV }}-${{ hashFiles('assets/tabicl-classifier-v2.idx') }}
+          key: tabicl-weights-${{ env.CKPT_REV }}-${{ hashFiles('assets/*.idx') }}
           fail-on-cache-miss: true
       - name: Install Nelson
         run: |
@@ -109,7 +110,7 @@ jobs:
       - uses: actions/cache/restore@v6
         with:
           path: weights
-          key: tabicl-weights-${{ env.CKPT_REV }}-${{ hashFiles('assets/tabicl-classifier-v2.idx') }}
+          key: tabicl-weights-${{ env.CKPT_REV }}-${{ hashFiles('assets/*.idx') }}
           fail-on-cache-miss: true
       - name: Install RunMat
         env:

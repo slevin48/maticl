@@ -156,9 +156,35 @@ MATLAB draws the permutations from its own RNG, so a native ensemble is a
 different (equally valid) sample than Python's. To reproduce Python exactly,
 pass its members through the `'Ensemble'` option, as the tests do.
 
+## 8. Regression (`tabicl_*_regressor.m`, `tabicl_quantile_icdf.m` ← `_sklearn/regressor.py`, `_model/quantile_dist.py`)
+
+The regressor checkpoint (`tabicl-regressor-v2-20260212.ckpt`, 347 tensors,
+loaded with `tabicl_load('regressor')`) has the same backbone with three
+differences, all keyed on `M.cfg.max_classes == 0`:
+
+* the target encoders `col.yW` and `icl.yW` are `1 × d` linear layers on the
+  scalar target, `y * yW + yb`, instead of one-hot tables;
+* the decoder outputs `num_quantiles = 999` values, the quantiles at levels
+  `k / 1000`, instead of class logits;
+* LayerNorms are bias-free (`bias_free_ln`); `tabicl_load` fills zero biases.
+
+`tabicl_fit_regressor` standardises `y` (as `StandardScaler`, after the
+float32 cast Python applies) and reuses `tabicl_fit` for imputation, column
+filtering, preprocessing and the ensemble, with a single class: as in
+`EnsembleGenerator(classification=False)`, members differ only by feature
+permutation and normalisation method. For each member,
+`tabicl_predict_regressor` sorts the raw quantiles (`QuantileToDistribution`
+fixes crossings by sorting) and computes the mean (of the 999 quantiles), the
+median and the requested quantiles. `tabicl_quantile_icdf` interpolates
+linearly between quantile levels and, outside `[0.001, 0.999]`, uses
+exponential tails whose scales are regressed on the 20 outermost quantiles.
+Each statistic is averaged over members and mapped back to the original
+scale.
+
 ## Not ported
 
-* `TabICLRegressor` (quantile regression head).
+* Regressor outputs other than mean, median and quantiles (variance, CRPS,
+  log-density), and GPD tails.
 * DataFrame inputs with categorical/string columns (ordinal encoding); pass
   numeric matrices.
 * KV caching, GPU / mixed precision, fine-tuning and the time-series

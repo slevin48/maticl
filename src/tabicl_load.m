@@ -1,10 +1,14 @@
 function M = tabicl_load(varargin)
-%TABICL_LOAD Load the pretrained TabICL v2 classifier into a MATLAB struct.
-%   M = TABICL_LOAD() uses weights/tabicl-classifier-v2.{idx,bin} from the
-%   repository root if they exist (see tools/export_weights.py). Otherwise it
-%   downloads the official checkpoint from Hugging Face (110 MB, once) into
-%   weights/, unzips it and reads the tensors directly, using the committed
-%   index assets/tabicl-classifier-v2.idx. No Python is needed.
+%TABICL_LOAD Load a pretrained TabICL v2 model into a MATLAB struct.
+%   M = TABICL_LOAD() loads the classifier. It uses
+%   weights/tabicl-classifier-v2.{idx,bin} from the repository root if they
+%   exist (see tools/export_weights.py). Otherwise it downloads the official
+%   checkpoint from Hugging Face (about 110 MB, once) into weights/, unzips it
+%   and reads the tensors directly, using the committed index
+%   assets/tabicl-classifier-v2.idx. No Python is needed.
+%
+%   M = TABICL_LOAD('regressor') loads the regressor checkpoint in the same
+%   way (weights/ or assets/tabicl-regressor-v2.idx), for TABICL_FIT_REGRESSOR.
 %
 %   M = TABICL_LOAD(PREFIX) reads PREFIX.idx and PREFIX.bin.
 %
@@ -13,11 +17,20 @@ function M = tabicl_load(varargin)
 %   [in x out], so that y = x * W + b.
 root = fileparts(fileparts(which('tabicl_load')));
 src = struct();
+kind = 'classifier';
+prefix = '';
 if numel(varargin) > 0
-    prefix = char(varargin(1));
-    use_bin = true;
-else
-    prefix = fullfile(root, 'weights', 'tabicl-classifier-v2');
+    arg = char(varargin(1));
+    if strcmp(arg, 'classifier') || strcmp(arg, 'regressor')
+        kind = arg;
+    else
+        prefix = arg;
+    end
+end
+model_name = ['tabicl-' kind '-v2'];
+use_bin = true;
+if isempty(prefix)
+    prefix = fullfile(root, 'weights', model_name);
     use_bin = exist([prefix '.bin'], 'file') > 0;
 end
 if use_bin
@@ -27,7 +40,7 @@ if use_bin
         error('tabicl:load', 'Cannot open %s.bin', prefix);
     end
 else
-    idx_file = fullfile(root, 'assets', 'tabicl-classifier-v2.idx');
+    idx_file = fullfile(root, 'assets', [model_name '.idx']);
     src.fbin = -1;
 end
 fidx = fopen(idx_file, 'r');
@@ -50,13 +63,16 @@ if ischar(line) && strncmp(line, 'archive ', 8)
     line = fgetl(fidx);
 end
 if ~strcmp(cfg.col_feature_group, 'same') || cfg.col_affine || ~cfg.col_target_aware ...
-        || cfg.row_rope_interleaved || ~cfg.norm_first || cfg.max_classes == 0
+        || cfg.row_rope_interleaved || ~cfg.norm_first
     fclose(fidx);
-    error('tabicl:load', 'Only the TabICLv2 classifier configuration is supported.');
+    error('tabicl:load', 'Only the TabICLv2 configuration is supported.');
 end
+% max_classes = 0 marks the regressor: the target encoders are 1 -> d linear
+% layers, the decoder predicts num_quantiles quantiles, and its LayerNorms
+% have no bias (bias_free_ln)
 src.datadir = '';
 if ~use_bin
-    src.datadir = fetch_checkpoint(fullfile(root, 'weights'), archive);
+    src.datadir = fetch_checkpoint(fullfile(root, 'weights'), archive, [model_name '-20260212']);
 end
 
 % Tensors follow in state_dict order and are read group by group (one
@@ -87,7 +103,7 @@ end
 row.freqs = g.freqs;
 [g, line] = read_group(fidx, src, line, 'row_interactor.out_ln.');
 row.lnw = g.weight;
-row.lnb = g.bias;
+row.lnb = ln_bias(g, 'bias', g.weight);
 
 icl = struct();
 icl.num_blocks = cfg.icl_num_blocks;
@@ -97,7 +113,7 @@ for b = 1:cfg.icl_num_blocks
 end
 [g, line] = read_group(fidx, src, line, 'icl_predictor.ln.');
 icl.lnw = g.weight;
-icl.lnb = g.bias;
+icl.lnb = ln_bias(g, 'bias', g.weight);
 [g, line] = read_group(fidx, src, line, 'icl_predictor.y_encoder.');
 icl.yW = g.weight;
 icl.yb = g.bias;
@@ -181,10 +197,9 @@ else
 end
 end
 
-function datadir = fetch_checkpoint(weights_dir, archive)
-% Download and unzip the Hugging Face checkpoint once (a PyTorch .ckpt is a
-% zip archive holding one raw storage file per tensor).
-name = 'tabicl-classifier-v2-20260212';
+function datadir = fetch_checkpoint(weights_dir, archive, name)
+% Download and unzip the Hugging Face checkpoint NAME.ckpt once (a PyTorch
+% .ckpt is a zip archive holding one raw storage file per tensor).
 url = ['https://huggingface.co/jingang/TabICL/resolve/' ...
     '4dcd344ece2c00be9e831fdd35bed57b5ad83e19/' name '.ckpt'];
 dest = fullfile(weights_dir, name);
@@ -196,7 +211,7 @@ if exist(weights_dir, 'dir') == 0
     mkdir(weights_dir);
 end
 zip_file = fullfile(weights_dir, [name '.zip']);
-fprintf('Downloading %s.ckpt from Hugging Face (110 MB, once)...\n', name);
+fprintf('Downloading %s.ckpt from Hugging Face (about 110 MB, once)...\n', name);
 % Some runtimes (e.g. Nelson) do not follow HTTP redirects and save the
 % small "Found. Redirecting to <url>" response instead: follow it by hand.
 for attempt = 1:3
@@ -239,9 +254,9 @@ end
 function P = make_mab(g, has_ssmax)
 P = struct();
 P.n1w = g.norm1_weight;
-P.n1b = g.norm1_bias;
+P.n1b = ln_bias(g, 'norm1_bias', g.norm1_weight);
 P.n2w = g.norm2_weight;
-P.n2b = g.norm2_bias;
+P.n2b = ln_bias(g, 'norm2_bias', g.norm2_weight);
 P.W1 = g.linear1_weight;
 P.b1 = g.linear1_bias;
 P.W2 = g.linear2_weight;
@@ -272,6 +287,14 @@ if has_ssmax
 end
 A.ssmax = S;
 P.attn = A;
+end
+
+function b = ln_bias(g, name, w)
+% LayerNorm bias, zero for bias-free LayerNorms (absent from the checkpoint)
+b = zeros(size(w));
+if isfield(g, name)
+    b = g.(name);
+end
 end
 
 function v = parse_value(s)

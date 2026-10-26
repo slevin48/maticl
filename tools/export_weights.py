@@ -9,15 +9,17 @@ Produces two files:
              storage = name of the raw file <dir>/data/<storage> holding the
              tensor inside the checkpoint zip)
 
-The index alone (committed as assets/tabicl-classifier-v2.idx) is enough for
-tabicl_load to read the tensors straight from the unzipped Hugging Face
-checkpoint, so MATLAB users do not need Python.
+The index alone (committed as assets/tabicl-{classifier,regressor}-v2.idx) is
+enough for tabicl_load to read the tensors straight from the unzipped Hugging
+Face checkpoint, so MATLAB users do not need Python.
 
 Tensors are written in PyTorch (row-major) order, so reading a 2-D [out, in]
 weight into a MATLAB array of size [in, out] yields its transpose directly.
 
 Usage:
-  python tools/export_weights.py [--ckpt PATH] [--out weights/tabicl-classifier-v2]
+  python tools/export_weights.py [--model classifier|regressor] [--ckpt PATH] [--out PREFIX]
+
+PREFIX defaults to weights/tabicl-<model>-v2.
 """
 
 import argparse
@@ -29,7 +31,11 @@ import numpy as np
 import torch
 
 
-DEFAULT_CKPT = "tabicl-classifier-v2-20260212.ckpt"
+CHECKPOINTS = {
+    "classifier": "tabicl-classifier-v2-20260212.ckpt",
+    "regressor": "tabicl-regressor-v2-20260212.ckpt",
+}
+REVISION = "4dcd344ece2c00be9e831fdd35bed57b5ad83e19"  # pinned, as in tabicl_load.m
 
 
 def storage_keys(ckpt_path):
@@ -54,15 +60,18 @@ def storage_keys(ckpt_path):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--model", default="classifier", choices=sorted(CHECKPOINTS))
     parser.add_argument("--ckpt", default=None, help="checkpoint path (downloaded from HF if omitted)")
-    parser.add_argument("--out", default="weights/tabicl-classifier-v2")
+    parser.add_argument("--out", default=None, help="output prefix (default weights/tabicl-<model>-v2)")
     args = parser.parse_args()
+    if args.out is None:
+        args.out = f"weights/tabicl-{args.model}-v2"
 
     ckpt_path = args.ckpt
     if ckpt_path is None:
         from huggingface_hub import hf_hub_download
 
-        ckpt_path = hf_hub_download(repo_id="jingang/TabICL", filename=DEFAULT_CKPT)
+        ckpt_path = hf_hub_download(repo_id="jingang/TabICL", filename=CHECKPOINTS[args.model], revision=REVISION)
 
     ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=True)
     config, state = ckpt["config"], ckpt["state_dict"]

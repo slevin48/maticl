@@ -2,9 +2,10 @@ function [logits, proba] = tabicl_icl(icl, cfg, R, ytr, num_classes)
 %TABICL_ICL Dataset-wise in-context learning transformer.
 %   icl : in-context learning weights (M.icl), cfg : model config (M.cfg)
 %   R   : [T x D] row representations, first numel(ytr) rows are training rows
-%   ytr : 0-based training labels
+%   ytr : 0-based training labels (scaled targets for the regressor)
 %   logits : [(T - numel(ytr)) x num_classes] raw logits for the test rows
-%   proba  : [] when num_classes <= cfg.max_classes
+%            (raw quantiles for the regressor, num_classes = num_quantiles)
+%   proba  : [] when num_classes <= cfg.max_classes, and for the regressor
 %
 %   With more classes, hierarchical classification is used (as in
 %   ICLearning._predict_hierarchical): classes are split into a tree of
@@ -15,7 +16,7 @@ function [logits, proba] = tabicl_icl(icl, cfg, R, ytr, num_classes)
 ytr = ytr(:);
 n = numel(ytr);
 proba = [];
-if num_classes <= cfg.max_classes
+if cfg.max_classes == 0 || num_classes <= cfg.max_classes
     logits = icl_logits(icl, cfg, R, ytr, num_classes);
     return;
 end
@@ -27,7 +28,11 @@ function logits = icl_logits(icl, cfg, R, ytr, num_classes)
 % One run of the ICL transformer: logits of the test rows, first num_classes
 n = numel(ytr);
 nh = cfg.icl_nhead;
-R(1:n, :) = R(1:n, :) + tabicl_onehot(ytr, cfg.max_classes) * icl.yW + icl.yb;
+if cfg.max_classes == 0
+    R(1:n, :) = R(1:n, :) + ytr(:) * icl.yW + icl.yb;   % regressor: linear target encoder
+else
+    R(1:n, :) = R(1:n, :) + tabicl_onehot(ytr, cfg.max_classes) * icl.yW + icl.yb;
+end
 for b = 1:icl.num_blocks
     % every row attends to the training rows only
     R = tabicl_mab(icl.(sprintf('b%d', b)), R, R(1:n, :), 1, nh, []);
