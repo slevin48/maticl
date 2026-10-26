@@ -14,7 +14,7 @@ idx = randperm(n);
 tr = idx(1:200);
 te = idx(201:end);
 
-M = tabicl_load();                         % weights/tabicl-classifier-v2.{idx,bin}
+M = tabicl_load();                         % downloads the checkpoint on first use
 clf = tabicl_fit(X(tr, :), y(tr), 'Model', M);
 [yhat, proba] = tabicl_predict(clf, X(te, :));
 fprintf('test accuracy: %.3f\n', mean(yhat == y(te)));

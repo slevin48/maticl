@@ -1,0 +1,417 @@
+config max_classes 10
+config num_quantiles 999
+config embed_dim 128
+config col_num_blocks 3
+config col_nhead 8
+config col_num_inds 128
+config col_affine False
+config col_feature_group same
+config col_feature_group_size 3
+config col_target_aware True
+config col_ssmax qassmax-mlp-elementwise
+config row_num_blocks 3
+config row_nhead 8
+config row_num_cls 4
+config row_rope_base 100000
+config row_rope_interleaved False
+config icl_num_blocks 12
+config icl_nhead 8
+config icl_ssmax qassmax-mlp-elementwise
+config ff_factor 2
+config dropout 0.0
+config activation gelu
+config norm_first True
+config bias_free_ln False
+config recompute False
+archive refactored_model
+tensor col_embedder.in_linear.weight 0 2 128 3 0
+tensor col_embedder.in_linear.bias 384 1 128 1
+tensor col_embedder.tf_col.blocks.0.ind_vectors 512 2 128 128 2
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.linear1.weight 16896 2 256 128 3
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.linear1.bias 49664 1 256 4
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.linear2.weight 49920 2 128 256 5
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.linear2.bias 82688 1 128 6
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.norm1.weight 82816 1 128 7
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.norm1.bias 82944 1 128 8
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.norm2.weight 83072 1 128 9
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.norm2.bias 83200 1 128 10
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.attn.in_proj_weight 83328 2 384 128 11
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.attn.in_proj_bias 132480 1 384 12
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.attn.out_proj.weight 132864 2 128 128 13
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.attn.out_proj.bias 149248 1 128 14
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.attn.ssmax_layer.base_mlp.0.weight 149376 2 64 1 15
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.attn.ssmax_layer.base_mlp.0.bias 149440 1 64 16
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.attn.ssmax_layer.base_mlp.2.weight 149504 2 128 64 17
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.attn.ssmax_layer.base_mlp.2.bias 157696 1 128 18
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.attn.ssmax_layer.query_mlp.0.weight 157824 2 64 16 19
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.attn.ssmax_layer.query_mlp.0.bias 158848 1 64 20
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.attn.ssmax_layer.query_mlp.2.weight 158912 2 16 64 21
+tensor col_embedder.tf_col.blocks.0.multihead_attn1.attn.ssmax_layer.query_mlp.2.bias 159936 1 16 22
+tensor col_embedder.tf_col.blocks.0.multihead_attn2.linear1.weight 159952 2 256 128 23
+tensor col_embedder.tf_col.blocks.0.multihead_attn2.linear1.bias 192720 1 256 24
+tensor col_embedder.tf_col.blocks.0.multihead_attn2.linear2.weight 192976 2 128 256 25
+tensor col_embedder.tf_col.blocks.0.multihead_attn2.linear2.bias 225744 1 128 26
+tensor col_embedder.tf_col.blocks.0.multihead_attn2.norm1.weight 225872 1 128 27
+tensor col_embedder.tf_col.blocks.0.multihead_attn2.norm1.bias 226000 1 128 28
+tensor col_embedder.tf_col.blocks.0.multihead_attn2.norm2.weight 226128 1 128 29
+tensor col_embedder.tf_col.blocks.0.multihead_attn2.norm2.bias 226256 1 128 30
+tensor col_embedder.tf_col.blocks.0.multihead_attn2.attn.in_proj_weight 226384 2 384 128 31
+tensor col_embedder.tf_col.blocks.0.multihead_attn2.attn.in_proj_bias 275536 1 384 32
+tensor col_embedder.tf_col.blocks.0.multihead_attn2.attn.out_proj.weight 275920 2 128 128 33
+tensor col_embedder.tf_col.blocks.0.multihead_attn2.attn.out_proj.bias 292304 1 128 34
+tensor col_embedder.tf_col.blocks.1.ind_vectors 292432 2 128 128 35
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.linear1.weight 308816 2 256 128 36
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.linear1.bias 341584 1 256 37
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.linear2.weight 341840 2 128 256 38
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.linear2.bias 374608 1 128 39
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.norm1.weight 374736 1 128 40
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.norm1.bias 374864 1 128 41
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.norm2.weight 374992 1 128 42
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.norm2.bias 375120 1 128 43
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.attn.in_proj_weight 375248 2 384 128 44
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.attn.in_proj_bias 424400 1 384 45
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.attn.out_proj.weight 424784 2 128 128 46
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.attn.out_proj.bias 441168 1 128 47
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.attn.ssmax_layer.base_mlp.0.weight 441296 2 64 1 48
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.attn.ssmax_layer.base_mlp.0.bias 441360 1 64 49
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.attn.ssmax_layer.base_mlp.2.weight 441424 2 128 64 50
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.attn.ssmax_layer.base_mlp.2.bias 449616 1 128 51
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.attn.ssmax_layer.query_mlp.0.weight 449744 2 64 16 52
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.attn.ssmax_layer.query_mlp.0.bias 450768 1 64 53
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.attn.ssmax_layer.query_mlp.2.weight 450832 2 16 64 54
+tensor col_embedder.tf_col.blocks.1.multihead_attn1.attn.ssmax_layer.query_mlp.2.bias 451856 1 16 55
+tensor col_embedder.tf_col.blocks.1.multihead_attn2.linear1.weight 451872 2 256 128 56
+tensor col_embedder.tf_col.blocks.1.multihead_attn2.linear1.bias 484640 1 256 57
+tensor col_embedder.tf_col.blocks.1.multihead_attn2.linear2.weight 484896 2 128 256 58
+tensor col_embedder.tf_col.blocks.1.multihead_attn2.linear2.bias 517664 1 128 59
+tensor col_embedder.tf_col.blocks.1.multihead_attn2.norm1.weight 517792 1 128 60
+tensor col_embedder.tf_col.blocks.1.multihead_attn2.norm1.bias 517920 1 128 61
+tensor col_embedder.tf_col.blocks.1.multihead_attn2.norm2.weight 518048 1 128 62
+tensor col_embedder.tf_col.blocks.1.multihead_attn2.norm2.bias 518176 1 128 63
+tensor col_embedder.tf_col.blocks.1.multihead_attn2.attn.in_proj_weight 518304 2 384 128 64
+tensor col_embedder.tf_col.blocks.1.multihead_attn2.attn.in_proj_bias 567456 1 384 65
+tensor col_embedder.tf_col.blocks.1.multihead_attn2.attn.out_proj.weight 567840 2 128 128 66
+tensor col_embedder.tf_col.blocks.1.multihead_attn2.attn.out_proj.bias 584224 1 128 67
+tensor col_embedder.tf_col.blocks.2.ind_vectors 584352 2 128 128 68
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.linear1.weight 600736 2 256 128 69
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.linear1.bias 633504 1 256 70
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.linear2.weight 633760 2 128 256 71
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.linear2.bias 666528 1 128 72
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.norm1.weight 666656 1 128 73
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.norm1.bias 666784 1 128 74
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.norm2.weight 666912 1 128 75
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.norm2.bias 667040 1 128 76
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.attn.in_proj_weight 667168 2 384 128 77
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.attn.in_proj_bias 716320 1 384 78
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.attn.out_proj.weight 716704 2 128 128 79
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.attn.out_proj.bias 733088 1 128 80
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.attn.ssmax_layer.base_mlp.0.weight 733216 2 64 1 81
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.attn.ssmax_layer.base_mlp.0.bias 733280 1 64 82
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.attn.ssmax_layer.base_mlp.2.weight 733344 2 128 64 83
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.attn.ssmax_layer.base_mlp.2.bias 741536 1 128 84
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.attn.ssmax_layer.query_mlp.0.weight 741664 2 64 16 85
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.attn.ssmax_layer.query_mlp.0.bias 742688 1 64 86
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.attn.ssmax_layer.query_mlp.2.weight 742752 2 16 64 87
+tensor col_embedder.tf_col.blocks.2.multihead_attn1.attn.ssmax_layer.query_mlp.2.bias 743776 1 16 88
+tensor col_embedder.tf_col.blocks.2.multihead_attn2.linear1.weight 743792 2 256 128 89
+tensor col_embedder.tf_col.blocks.2.multihead_attn2.linear1.bias 776560 1 256 90
+tensor col_embedder.tf_col.blocks.2.multihead_attn2.linear2.weight 776816 2 128 256 91
+tensor col_embedder.tf_col.blocks.2.multihead_attn2.linear2.bias 809584 1 128 92
+tensor col_embedder.tf_col.blocks.2.multihead_attn2.norm1.weight 809712 1 128 93
+tensor col_embedder.tf_col.blocks.2.multihead_attn2.norm1.bias 809840 1 128 94
+tensor col_embedder.tf_col.blocks.2.multihead_attn2.norm2.weight 809968 1 128 95
+tensor col_embedder.tf_col.blocks.2.multihead_attn2.norm2.bias 810096 1 128 96
+tensor col_embedder.tf_col.blocks.2.multihead_attn2.attn.in_proj_weight 810224 2 384 128 97
+tensor col_embedder.tf_col.blocks.2.multihead_attn2.attn.in_proj_bias 859376 1 384 98
+tensor col_embedder.tf_col.blocks.2.multihead_attn2.attn.out_proj.weight 859760 2 128 128 99
+tensor col_embedder.tf_col.blocks.2.multihead_attn2.attn.out_proj.bias 876144 1 128 100
+tensor col_embedder.y_encoder.weight 876272 2 128 10 101
+tensor col_embedder.y_encoder.bias 877552 1 128 102
+tensor row_interactor.cls_tokens 877680 2 4 128 103
+tensor row_interactor.tf_row.blocks.0.linear1.weight 878192 2 256 128 104
+tensor row_interactor.tf_row.blocks.0.linear1.bias 910960 1 256 105
+tensor row_interactor.tf_row.blocks.0.linear2.weight 911216 2 128 256 106
+tensor row_interactor.tf_row.blocks.0.linear2.bias 943984 1 128 107
+tensor row_interactor.tf_row.blocks.0.norm1.weight 944112 1 128 108
+tensor row_interactor.tf_row.blocks.0.norm1.bias 944240 1 128 109
+tensor row_interactor.tf_row.blocks.0.norm2.weight 944368 1 128 110
+tensor row_interactor.tf_row.blocks.0.norm2.bias 944496 1 128 111
+tensor row_interactor.tf_row.blocks.0.attn.in_proj_weight 944624 2 384 128 112
+tensor row_interactor.tf_row.blocks.0.attn.in_proj_bias 993776 1 384 113
+tensor row_interactor.tf_row.blocks.0.attn.out_proj.weight 994160 2 128 128 114
+tensor row_interactor.tf_row.blocks.0.attn.out_proj.bias 1010544 1 128 115
+tensor row_interactor.tf_row.blocks.1.linear1.weight 1010672 2 256 128 116
+tensor row_interactor.tf_row.blocks.1.linear1.bias 1043440 1 256 117
+tensor row_interactor.tf_row.blocks.1.linear2.weight 1043696 2 128 256 118
+tensor row_interactor.tf_row.blocks.1.linear2.bias 1076464 1 128 119
+tensor row_interactor.tf_row.blocks.1.norm1.weight 1076592 1 128 120
+tensor row_interactor.tf_row.blocks.1.norm1.bias 1076720 1 128 121
+tensor row_interactor.tf_row.blocks.1.norm2.weight 1076848 1 128 122
+tensor row_interactor.tf_row.blocks.1.norm2.bias 1076976 1 128 123
+tensor row_interactor.tf_row.blocks.1.attn.in_proj_weight 1077104 2 384 128 124
+tensor row_interactor.tf_row.blocks.1.attn.in_proj_bias 1126256 1 384 125
+tensor row_interactor.tf_row.blocks.1.attn.out_proj.weight 1126640 2 128 128 126
+tensor row_interactor.tf_row.blocks.1.attn.out_proj.bias 1143024 1 128 127
+tensor row_interactor.tf_row.blocks.2.linear1.weight 1143152 2 256 128 128
+tensor row_interactor.tf_row.blocks.2.linear1.bias 1175920 1 256 129
+tensor row_interactor.tf_row.blocks.2.linear2.weight 1176176 2 128 256 130
+tensor row_interactor.tf_row.blocks.2.linear2.bias 1208944 1 128 131
+tensor row_interactor.tf_row.blocks.2.norm1.weight 1209072 1 128 132
+tensor row_interactor.tf_row.blocks.2.norm1.bias 1209200 1 128 133
+tensor row_interactor.tf_row.blocks.2.norm2.weight 1209328 1 128 134
+tensor row_interactor.tf_row.blocks.2.norm2.bias 1209456 1 128 135
+tensor row_interactor.tf_row.blocks.2.attn.in_proj_weight 1209584 2 384 128 136
+tensor row_interactor.tf_row.blocks.2.attn.in_proj_bias 1258736 1 384 137
+tensor row_interactor.tf_row.blocks.2.attn.out_proj.weight 1259120 2 128 128 138
+tensor row_interactor.tf_row.blocks.2.attn.out_proj.bias 1275504 1 128 139
+tensor row_interactor.tf_row.rope.freqs 1275632 1 8 140
+tensor row_interactor.out_ln.weight 1275640 1 128 141
+tensor row_interactor.out_ln.bias 1275768 1 128 142
+tensor icl_predictor.tf_icl.blocks.0.linear1.weight 1275896 2 1024 512 143
+tensor icl_predictor.tf_icl.blocks.0.linear1.bias 1800184 1 1024 144
+tensor icl_predictor.tf_icl.blocks.0.linear2.weight 1801208 2 512 1024 145
+tensor icl_predictor.tf_icl.blocks.0.linear2.bias 2325496 1 512 146
+tensor icl_predictor.tf_icl.blocks.0.norm1.weight 2326008 1 512 147
+tensor icl_predictor.tf_icl.blocks.0.norm1.bias 2326520 1 512 148
+tensor icl_predictor.tf_icl.blocks.0.norm2.weight 2327032 1 512 149
+tensor icl_predictor.tf_icl.blocks.0.norm2.bias 2327544 1 512 150
+tensor icl_predictor.tf_icl.blocks.0.attn.in_proj_weight 2328056 2 1536 512 151
+tensor icl_predictor.tf_icl.blocks.0.attn.in_proj_bias 3114488 1 1536 152
+tensor icl_predictor.tf_icl.blocks.0.attn.out_proj.weight 3116024 2 512 512 153
+tensor icl_predictor.tf_icl.blocks.0.attn.out_proj.bias 3378168 1 512 154
+tensor icl_predictor.tf_icl.blocks.0.attn.ssmax_layer.base_mlp.0.weight 3378680 2 64 1 155
+tensor icl_predictor.tf_icl.blocks.0.attn.ssmax_layer.base_mlp.0.bias 3378744 1 64 156
+tensor icl_predictor.tf_icl.blocks.0.attn.ssmax_layer.base_mlp.2.weight 3378808 2 512 64 157
+tensor icl_predictor.tf_icl.blocks.0.attn.ssmax_layer.base_mlp.2.bias 3411576 1 512 158
+tensor icl_predictor.tf_icl.blocks.0.attn.ssmax_layer.query_mlp.0.weight 3412088 2 64 64 159
+tensor icl_predictor.tf_icl.blocks.0.attn.ssmax_layer.query_mlp.0.bias 3416184 1 64 160
+tensor icl_predictor.tf_icl.blocks.0.attn.ssmax_layer.query_mlp.2.weight 3416248 2 64 64 161
+tensor icl_predictor.tf_icl.blocks.0.attn.ssmax_layer.query_mlp.2.bias 3420344 1 64 162
+tensor icl_predictor.tf_icl.blocks.1.linear1.weight 3420408 2 1024 512 163
+tensor icl_predictor.tf_icl.blocks.1.linear1.bias 3944696 1 1024 164
+tensor icl_predictor.tf_icl.blocks.1.linear2.weight 3945720 2 512 1024 165
+tensor icl_predictor.tf_icl.blocks.1.linear2.bias 4470008 1 512 166
+tensor icl_predictor.tf_icl.blocks.1.norm1.weight 4470520 1 512 167
+tensor icl_predictor.tf_icl.blocks.1.norm1.bias 4471032 1 512 168
+tensor icl_predictor.tf_icl.blocks.1.norm2.weight 4471544 1 512 169
+tensor icl_predictor.tf_icl.blocks.1.norm2.bias 4472056 1 512 170
+tensor icl_predictor.tf_icl.blocks.1.attn.in_proj_weight 4472568 2 1536 512 171
+tensor icl_predictor.tf_icl.blocks.1.attn.in_proj_bias 5259000 1 1536 172
+tensor icl_predictor.tf_icl.blocks.1.attn.out_proj.weight 5260536 2 512 512 173
+tensor icl_predictor.tf_icl.blocks.1.attn.out_proj.bias 5522680 1 512 174
+tensor icl_predictor.tf_icl.blocks.1.attn.ssmax_layer.base_mlp.0.weight 5523192 2 64 1 175
+tensor icl_predictor.tf_icl.blocks.1.attn.ssmax_layer.base_mlp.0.bias 5523256 1 64 176
+tensor icl_predictor.tf_icl.blocks.1.attn.ssmax_layer.base_mlp.2.weight 5523320 2 512 64 177
+tensor icl_predictor.tf_icl.blocks.1.attn.ssmax_layer.base_mlp.2.bias 5556088 1 512 178
+tensor icl_predictor.tf_icl.blocks.1.attn.ssmax_layer.query_mlp.0.weight 5556600 2 64 64 179
+tensor icl_predictor.tf_icl.blocks.1.attn.ssmax_layer.query_mlp.0.bias 5560696 1 64 180
+tensor icl_predictor.tf_icl.blocks.1.attn.ssmax_layer.query_mlp.2.weight 5560760 2 64 64 181
+tensor icl_predictor.tf_icl.blocks.1.attn.ssmax_layer.query_mlp.2.bias 5564856 1 64 182
+tensor icl_predictor.tf_icl.blocks.2.linear1.weight 5564920 2 1024 512 183
+tensor icl_predictor.tf_icl.blocks.2.linear1.bias 6089208 1 1024 184
+tensor icl_predictor.tf_icl.blocks.2.linear2.weight 6090232 2 512 1024 185
+tensor icl_predictor.tf_icl.blocks.2.linear2.bias 6614520 1 512 186
+tensor icl_predictor.tf_icl.blocks.2.norm1.weight 6615032 1 512 187
+tensor icl_predictor.tf_icl.blocks.2.norm1.bias 6615544 1 512 188
+tensor icl_predictor.tf_icl.blocks.2.norm2.weight 6616056 1 512 189
+tensor icl_predictor.tf_icl.blocks.2.norm2.bias 6616568 1 512 190
+tensor icl_predictor.tf_icl.blocks.2.attn.in_proj_weight 6617080 2 1536 512 191
+tensor icl_predictor.tf_icl.blocks.2.attn.in_proj_bias 7403512 1 1536 192
+tensor icl_predictor.tf_icl.blocks.2.attn.out_proj.weight 7405048 2 512 512 193
+tensor icl_predictor.tf_icl.blocks.2.attn.out_proj.bias 7667192 1 512 194
+tensor icl_predictor.tf_icl.blocks.2.attn.ssmax_layer.base_mlp.0.weight 7667704 2 64 1 195
+tensor icl_predictor.tf_icl.blocks.2.attn.ssmax_layer.base_mlp.0.bias 7667768 1 64 196
+tensor icl_predictor.tf_icl.blocks.2.attn.ssmax_layer.base_mlp.2.weight 7667832 2 512 64 197
+tensor icl_predictor.tf_icl.blocks.2.attn.ssmax_layer.base_mlp.2.bias 7700600 1 512 198
+tensor icl_predictor.tf_icl.blocks.2.attn.ssmax_layer.query_mlp.0.weight 7701112 2 64 64 199
+tensor icl_predictor.tf_icl.blocks.2.attn.ssmax_layer.query_mlp.0.bias 7705208 1 64 200
+tensor icl_predictor.tf_icl.blocks.2.attn.ssmax_layer.query_mlp.2.weight 7705272 2 64 64 201
+tensor icl_predictor.tf_icl.blocks.2.attn.ssmax_layer.query_mlp.2.bias 7709368 1 64 202
+tensor icl_predictor.tf_icl.blocks.3.linear1.weight 7709432 2 1024 512 203
+tensor icl_predictor.tf_icl.blocks.3.linear1.bias 8233720 1 1024 204
+tensor icl_predictor.tf_icl.blocks.3.linear2.weight 8234744 2 512 1024 205
+tensor icl_predictor.tf_icl.blocks.3.linear2.bias 8759032 1 512 206
+tensor icl_predictor.tf_icl.blocks.3.norm1.weight 8759544 1 512 207
+tensor icl_predictor.tf_icl.blocks.3.norm1.bias 8760056 1 512 208
+tensor icl_predictor.tf_icl.blocks.3.norm2.weight 8760568 1 512 209
+tensor icl_predictor.tf_icl.blocks.3.norm2.bias 8761080 1 512 210
+tensor icl_predictor.tf_icl.blocks.3.attn.in_proj_weight 8761592 2 1536 512 211
+tensor icl_predictor.tf_icl.blocks.3.attn.in_proj_bias 9548024 1 1536 212
+tensor icl_predictor.tf_icl.blocks.3.attn.out_proj.weight 9549560 2 512 512 213
+tensor icl_predictor.tf_icl.blocks.3.attn.out_proj.bias 9811704 1 512 214
+tensor icl_predictor.tf_icl.blocks.3.attn.ssmax_layer.base_mlp.0.weight 9812216 2 64 1 215
+tensor icl_predictor.tf_icl.blocks.3.attn.ssmax_layer.base_mlp.0.bias 9812280 1 64 216
+tensor icl_predictor.tf_icl.blocks.3.attn.ssmax_layer.base_mlp.2.weight 9812344 2 512 64 217
+tensor icl_predictor.tf_icl.blocks.3.attn.ssmax_layer.base_mlp.2.bias 9845112 1 512 218
+tensor icl_predictor.tf_icl.blocks.3.attn.ssmax_layer.query_mlp.0.weight 9845624 2 64 64 219
+tensor icl_predictor.tf_icl.blocks.3.attn.ssmax_layer.query_mlp.0.bias 9849720 1 64 220
+tensor icl_predictor.tf_icl.blocks.3.attn.ssmax_layer.query_mlp.2.weight 9849784 2 64 64 221
+tensor icl_predictor.tf_icl.blocks.3.attn.ssmax_layer.query_mlp.2.bias 9853880 1 64 222
+tensor icl_predictor.tf_icl.blocks.4.linear1.weight 9853944 2 1024 512 223
+tensor icl_predictor.tf_icl.blocks.4.linear1.bias 10378232 1 1024 224
+tensor icl_predictor.tf_icl.blocks.4.linear2.weight 10379256 2 512 1024 225
+tensor icl_predictor.tf_icl.blocks.4.linear2.bias 10903544 1 512 226
+tensor icl_predictor.tf_icl.blocks.4.norm1.weight 10904056 1 512 227
+tensor icl_predictor.tf_icl.blocks.4.norm1.bias 10904568 1 512 228
+tensor icl_predictor.tf_icl.blocks.4.norm2.weight 10905080 1 512 229
+tensor icl_predictor.tf_icl.blocks.4.norm2.bias 10905592 1 512 230
+tensor icl_predictor.tf_icl.blocks.4.attn.in_proj_weight 10906104 2 1536 512 231
+tensor icl_predictor.tf_icl.blocks.4.attn.in_proj_bias 11692536 1 1536 232
+tensor icl_predictor.tf_icl.blocks.4.attn.out_proj.weight 11694072 2 512 512 233
+tensor icl_predictor.tf_icl.blocks.4.attn.out_proj.bias 11956216 1 512 234
+tensor icl_predictor.tf_icl.blocks.4.attn.ssmax_layer.base_mlp.0.weight 11956728 2 64 1 235
+tensor icl_predictor.tf_icl.blocks.4.attn.ssmax_layer.base_mlp.0.bias 11956792 1 64 236
+tensor icl_predictor.tf_icl.blocks.4.attn.ssmax_layer.base_mlp.2.weight 11956856 2 512 64 237
+tensor icl_predictor.tf_icl.blocks.4.attn.ssmax_layer.base_mlp.2.bias 11989624 1 512 238
+tensor icl_predictor.tf_icl.blocks.4.attn.ssmax_layer.query_mlp.0.weight 11990136 2 64 64 239
+tensor icl_predictor.tf_icl.blocks.4.attn.ssmax_layer.query_mlp.0.bias 11994232 1 64 240
+tensor icl_predictor.tf_icl.blocks.4.attn.ssmax_layer.query_mlp.2.weight 11994296 2 64 64 241
+tensor icl_predictor.tf_icl.blocks.4.attn.ssmax_layer.query_mlp.2.bias 11998392 1 64 242
+tensor icl_predictor.tf_icl.blocks.5.linear1.weight 11998456 2 1024 512 243
+tensor icl_predictor.tf_icl.blocks.5.linear1.bias 12522744 1 1024 244
+tensor icl_predictor.tf_icl.blocks.5.linear2.weight 12523768 2 512 1024 245
+tensor icl_predictor.tf_icl.blocks.5.linear2.bias 13048056 1 512 246
+tensor icl_predictor.tf_icl.blocks.5.norm1.weight 13048568 1 512 247
+tensor icl_predictor.tf_icl.blocks.5.norm1.bias 13049080 1 512 248
+tensor icl_predictor.tf_icl.blocks.5.norm2.weight 13049592 1 512 249
+tensor icl_predictor.tf_icl.blocks.5.norm2.bias 13050104 1 512 250
+tensor icl_predictor.tf_icl.blocks.5.attn.in_proj_weight 13050616 2 1536 512 251
+tensor icl_predictor.tf_icl.blocks.5.attn.in_proj_bias 13837048 1 1536 252
+tensor icl_predictor.tf_icl.blocks.5.attn.out_proj.weight 13838584 2 512 512 253
+tensor icl_predictor.tf_icl.blocks.5.attn.out_proj.bias 14100728 1 512 254
+tensor icl_predictor.tf_icl.blocks.5.attn.ssmax_layer.base_mlp.0.weight 14101240 2 64 1 255
+tensor icl_predictor.tf_icl.blocks.5.attn.ssmax_layer.base_mlp.0.bias 14101304 1 64 256
+tensor icl_predictor.tf_icl.blocks.5.attn.ssmax_layer.base_mlp.2.weight 14101368 2 512 64 257
+tensor icl_predictor.tf_icl.blocks.5.attn.ssmax_layer.base_mlp.2.bias 14134136 1 512 258
+tensor icl_predictor.tf_icl.blocks.5.attn.ssmax_layer.query_mlp.0.weight 14134648 2 64 64 259
+tensor icl_predictor.tf_icl.blocks.5.attn.ssmax_layer.query_mlp.0.bias 14138744 1 64 260
+tensor icl_predictor.tf_icl.blocks.5.attn.ssmax_layer.query_mlp.2.weight 14138808 2 64 64 261
+tensor icl_predictor.tf_icl.blocks.5.attn.ssmax_layer.query_mlp.2.bias 14142904 1 64 262
+tensor icl_predictor.tf_icl.blocks.6.linear1.weight 14142968 2 1024 512 263
+tensor icl_predictor.tf_icl.blocks.6.linear1.bias 14667256 1 1024 264
+tensor icl_predictor.tf_icl.blocks.6.linear2.weight 14668280 2 512 1024 265
+tensor icl_predictor.tf_icl.blocks.6.linear2.bias 15192568 1 512 266
+tensor icl_predictor.tf_icl.blocks.6.norm1.weight 15193080 1 512 267
+tensor icl_predictor.tf_icl.blocks.6.norm1.bias 15193592 1 512 268
+tensor icl_predictor.tf_icl.blocks.6.norm2.weight 15194104 1 512 269
+tensor icl_predictor.tf_icl.blocks.6.norm2.bias 15194616 1 512 270
+tensor icl_predictor.tf_icl.blocks.6.attn.in_proj_weight 15195128 2 1536 512 271
+tensor icl_predictor.tf_icl.blocks.6.attn.in_proj_bias 15981560 1 1536 272
+tensor icl_predictor.tf_icl.blocks.6.attn.out_proj.weight 15983096 2 512 512 273
+tensor icl_predictor.tf_icl.blocks.6.attn.out_proj.bias 16245240 1 512 274
+tensor icl_predictor.tf_icl.blocks.6.attn.ssmax_layer.base_mlp.0.weight 16245752 2 64 1 275
+tensor icl_predictor.tf_icl.blocks.6.attn.ssmax_layer.base_mlp.0.bias 16245816 1 64 276
+tensor icl_predictor.tf_icl.blocks.6.attn.ssmax_layer.base_mlp.2.weight 16245880 2 512 64 277
+tensor icl_predictor.tf_icl.blocks.6.attn.ssmax_layer.base_mlp.2.bias 16278648 1 512 278
+tensor icl_predictor.tf_icl.blocks.6.attn.ssmax_layer.query_mlp.0.weight 16279160 2 64 64 279
+tensor icl_predictor.tf_icl.blocks.6.attn.ssmax_layer.query_mlp.0.bias 16283256 1 64 280
+tensor icl_predictor.tf_icl.blocks.6.attn.ssmax_layer.query_mlp.2.weight 16283320 2 64 64 281
+tensor icl_predictor.tf_icl.blocks.6.attn.ssmax_layer.query_mlp.2.bias 16287416 1 64 282
+tensor icl_predictor.tf_icl.blocks.7.linear1.weight 16287480 2 1024 512 283
+tensor icl_predictor.tf_icl.blocks.7.linear1.bias 16811768 1 1024 284
+tensor icl_predictor.tf_icl.blocks.7.linear2.weight 16812792 2 512 1024 285
+tensor icl_predictor.tf_icl.blocks.7.linear2.bias 17337080 1 512 286
+tensor icl_predictor.tf_icl.blocks.7.norm1.weight 17337592 1 512 287
+tensor icl_predictor.tf_icl.blocks.7.norm1.bias 17338104 1 512 288
+tensor icl_predictor.tf_icl.blocks.7.norm2.weight 17338616 1 512 289
+tensor icl_predictor.tf_icl.blocks.7.norm2.bias 17339128 1 512 290
+tensor icl_predictor.tf_icl.blocks.7.attn.in_proj_weight 17339640 2 1536 512 291
+tensor icl_predictor.tf_icl.blocks.7.attn.in_proj_bias 18126072 1 1536 292
+tensor icl_predictor.tf_icl.blocks.7.attn.out_proj.weight 18127608 2 512 512 293
+tensor icl_predictor.tf_icl.blocks.7.attn.out_proj.bias 18389752 1 512 294
+tensor icl_predictor.tf_icl.blocks.7.attn.ssmax_layer.base_mlp.0.weight 18390264 2 64 1 295
+tensor icl_predictor.tf_icl.blocks.7.attn.ssmax_layer.base_mlp.0.bias 18390328 1 64 296
+tensor icl_predictor.tf_icl.blocks.7.attn.ssmax_layer.base_mlp.2.weight 18390392 2 512 64 297
+tensor icl_predictor.tf_icl.blocks.7.attn.ssmax_layer.base_mlp.2.bias 18423160 1 512 298
+tensor icl_predictor.tf_icl.blocks.7.attn.ssmax_layer.query_mlp.0.weight 18423672 2 64 64 299
+tensor icl_predictor.tf_icl.blocks.7.attn.ssmax_layer.query_mlp.0.bias 18427768 1 64 300
+tensor icl_predictor.tf_icl.blocks.7.attn.ssmax_layer.query_mlp.2.weight 18427832 2 64 64 301
+tensor icl_predictor.tf_icl.blocks.7.attn.ssmax_layer.query_mlp.2.bias 18431928 1 64 302
+tensor icl_predictor.tf_icl.blocks.8.linear1.weight 18431992 2 1024 512 303
+tensor icl_predictor.tf_icl.blocks.8.linear1.bias 18956280 1 1024 304
+tensor icl_predictor.tf_icl.blocks.8.linear2.weight 18957304 2 512 1024 305
+tensor icl_predictor.tf_icl.blocks.8.linear2.bias 19481592 1 512 306
+tensor icl_predictor.tf_icl.blocks.8.norm1.weight 19482104 1 512 307
+tensor icl_predictor.tf_icl.blocks.8.norm1.bias 19482616 1 512 308
+tensor icl_predictor.tf_icl.blocks.8.norm2.weight 19483128 1 512 309
+tensor icl_predictor.tf_icl.blocks.8.norm2.bias 19483640 1 512 310
+tensor icl_predictor.tf_icl.blocks.8.attn.in_proj_weight 19484152 2 1536 512 311
+tensor icl_predictor.tf_icl.blocks.8.attn.in_proj_bias 20270584 1 1536 312
+tensor icl_predictor.tf_icl.blocks.8.attn.out_proj.weight 20272120 2 512 512 313
+tensor icl_predictor.tf_icl.blocks.8.attn.out_proj.bias 20534264 1 512 314
+tensor icl_predictor.tf_icl.blocks.8.attn.ssmax_layer.base_mlp.0.weight 20534776 2 64 1 315
+tensor icl_predictor.tf_icl.blocks.8.attn.ssmax_layer.base_mlp.0.bias 20534840 1 64 316
+tensor icl_predictor.tf_icl.blocks.8.attn.ssmax_layer.base_mlp.2.weight 20534904 2 512 64 317
+tensor icl_predictor.tf_icl.blocks.8.attn.ssmax_layer.base_mlp.2.bias 20567672 1 512 318
+tensor icl_predictor.tf_icl.blocks.8.attn.ssmax_layer.query_mlp.0.weight 20568184 2 64 64 319
+tensor icl_predictor.tf_icl.blocks.8.attn.ssmax_layer.query_mlp.0.bias 20572280 1 64 320
+tensor icl_predictor.tf_icl.blocks.8.attn.ssmax_layer.query_mlp.2.weight 20572344 2 64 64 321
+tensor icl_predictor.tf_icl.blocks.8.attn.ssmax_layer.query_mlp.2.bias 20576440 1 64 322
+tensor icl_predictor.tf_icl.blocks.9.linear1.weight 20576504 2 1024 512 323
+tensor icl_predictor.tf_icl.blocks.9.linear1.bias 21100792 1 1024 324
+tensor icl_predictor.tf_icl.blocks.9.linear2.weight 21101816 2 512 1024 325
+tensor icl_predictor.tf_icl.blocks.9.linear2.bias 21626104 1 512 326
+tensor icl_predictor.tf_icl.blocks.9.norm1.weight 21626616 1 512 327
+tensor icl_predictor.tf_icl.blocks.9.norm1.bias 21627128 1 512 328
+tensor icl_predictor.tf_icl.blocks.9.norm2.weight 21627640 1 512 329
+tensor icl_predictor.tf_icl.blocks.9.norm2.bias 21628152 1 512 330
+tensor icl_predictor.tf_icl.blocks.9.attn.in_proj_weight 21628664 2 1536 512 331
+tensor icl_predictor.tf_icl.blocks.9.attn.in_proj_bias 22415096 1 1536 332
+tensor icl_predictor.tf_icl.blocks.9.attn.out_proj.weight 22416632 2 512 512 333
+tensor icl_predictor.tf_icl.blocks.9.attn.out_proj.bias 22678776 1 512 334
+tensor icl_predictor.tf_icl.blocks.9.attn.ssmax_layer.base_mlp.0.weight 22679288 2 64 1 335
+tensor icl_predictor.tf_icl.blocks.9.attn.ssmax_layer.base_mlp.0.bias 22679352 1 64 336
+tensor icl_predictor.tf_icl.blocks.9.attn.ssmax_layer.base_mlp.2.weight 22679416 2 512 64 337
+tensor icl_predictor.tf_icl.blocks.9.attn.ssmax_layer.base_mlp.2.bias 22712184 1 512 338
+tensor icl_predictor.tf_icl.blocks.9.attn.ssmax_layer.query_mlp.0.weight 22712696 2 64 64 339
+tensor icl_predictor.tf_icl.blocks.9.attn.ssmax_layer.query_mlp.0.bias 22716792 1 64 340
+tensor icl_predictor.tf_icl.blocks.9.attn.ssmax_layer.query_mlp.2.weight 22716856 2 64 64 341
+tensor icl_predictor.tf_icl.blocks.9.attn.ssmax_layer.query_mlp.2.bias 22720952 1 64 342
+tensor icl_predictor.tf_icl.blocks.10.linear1.weight 22721016 2 1024 512 343
+tensor icl_predictor.tf_icl.blocks.10.linear1.bias 23245304 1 1024 344
+tensor icl_predictor.tf_icl.blocks.10.linear2.weight 23246328 2 512 1024 345
+tensor icl_predictor.tf_icl.blocks.10.linear2.bias 23770616 1 512 346
+tensor icl_predictor.tf_icl.blocks.10.norm1.weight 23771128 1 512 347
+tensor icl_predictor.tf_icl.blocks.10.norm1.bias 23771640 1 512 348
+tensor icl_predictor.tf_icl.blocks.10.norm2.weight 23772152 1 512 349
+tensor icl_predictor.tf_icl.blocks.10.norm2.bias 23772664 1 512 350
+tensor icl_predictor.tf_icl.blocks.10.attn.in_proj_weight 23773176 2 1536 512 351
+tensor icl_predictor.tf_icl.blocks.10.attn.in_proj_bias 24559608 1 1536 352
+tensor icl_predictor.tf_icl.blocks.10.attn.out_proj.weight 24561144 2 512 512 353
+tensor icl_predictor.tf_icl.blocks.10.attn.out_proj.bias 24823288 1 512 354
+tensor icl_predictor.tf_icl.blocks.10.attn.ssmax_layer.base_mlp.0.weight 24823800 2 64 1 355
+tensor icl_predictor.tf_icl.blocks.10.attn.ssmax_layer.base_mlp.0.bias 24823864 1 64 356
+tensor icl_predictor.tf_icl.blocks.10.attn.ssmax_layer.base_mlp.2.weight 24823928 2 512 64 357
+tensor icl_predictor.tf_icl.blocks.10.attn.ssmax_layer.base_mlp.2.bias 24856696 1 512 358
+tensor icl_predictor.tf_icl.blocks.10.attn.ssmax_layer.query_mlp.0.weight 24857208 2 64 64 359
+tensor icl_predictor.tf_icl.blocks.10.attn.ssmax_layer.query_mlp.0.bias 24861304 1 64 360
+tensor icl_predictor.tf_icl.blocks.10.attn.ssmax_layer.query_mlp.2.weight 24861368 2 64 64 361
+tensor icl_predictor.tf_icl.blocks.10.attn.ssmax_layer.query_mlp.2.bias 24865464 1 64 362
+tensor icl_predictor.tf_icl.blocks.11.linear1.weight 24865528 2 1024 512 363
+tensor icl_predictor.tf_icl.blocks.11.linear1.bias 25389816 1 1024 364
+tensor icl_predictor.tf_icl.blocks.11.linear2.weight 25390840 2 512 1024 365
+tensor icl_predictor.tf_icl.blocks.11.linear2.bias 25915128 1 512 366
+tensor icl_predictor.tf_icl.blocks.11.norm1.weight 25915640 1 512 367
+tensor icl_predictor.tf_icl.blocks.11.norm1.bias 25916152 1 512 368
+tensor icl_predictor.tf_icl.blocks.11.norm2.weight 25916664 1 512 369
+tensor icl_predictor.tf_icl.blocks.11.norm2.bias 25917176 1 512 370
+tensor icl_predictor.tf_icl.blocks.11.attn.in_proj_weight 25917688 2 1536 512 371
+tensor icl_predictor.tf_icl.blocks.11.attn.in_proj_bias 26704120 1 1536 372
+tensor icl_predictor.tf_icl.blocks.11.attn.out_proj.weight 26705656 2 512 512 373
+tensor icl_predictor.tf_icl.blocks.11.attn.out_proj.bias 26967800 1 512 374
+tensor icl_predictor.tf_icl.blocks.11.attn.ssmax_layer.base_mlp.0.weight 26968312 2 64 1 375
+tensor icl_predictor.tf_icl.blocks.11.attn.ssmax_layer.base_mlp.0.bias 26968376 1 64 376
+tensor icl_predictor.tf_icl.blocks.11.attn.ssmax_layer.base_mlp.2.weight 26968440 2 512 64 377
+tensor icl_predictor.tf_icl.blocks.11.attn.ssmax_layer.base_mlp.2.bias 27001208 1 512 378
+tensor icl_predictor.tf_icl.blocks.11.attn.ssmax_layer.query_mlp.0.weight 27001720 2 64 64 379
+tensor icl_predictor.tf_icl.blocks.11.attn.ssmax_layer.query_mlp.0.bias 27005816 1 64 380
+tensor icl_predictor.tf_icl.blocks.11.attn.ssmax_layer.query_mlp.2.weight 27005880 2 64 64 381
+tensor icl_predictor.tf_icl.blocks.11.attn.ssmax_layer.query_mlp.2.bias 27009976 1 64 382
+tensor icl_predictor.ln.weight 27010040 1 512 383
+tensor icl_predictor.ln.bias 27010552 1 512 384
+tensor icl_predictor.y_encoder.weight 27011064 2 512 10 385
+tensor icl_predictor.y_encoder.bias 27016184 1 512 386
+tensor icl_predictor.decoder.0.weight 27016696 2 1024 512 387
+tensor icl_predictor.decoder.0.bias 27540984 1 1024 388
+tensor icl_predictor.decoder.2.weight 27542008 2 10 1024 389
+tensor icl_predictor.decoder.2.bias 27552248 1 10 390

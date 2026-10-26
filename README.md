@@ -36,8 +36,16 @@ maticl in double). Predicted labels agree 100% on all three datasets.
 
 ## Setup
 
-The weights are not in the repository (110 MB). They are exported once from
-the official Hugging Face checkpoint:
+Nothing to install. On first use `tabicl_load()` downloads the official
+checkpoint from Hugging Face
+([jingang/TabICL](https://huggingface.co/jingang/TabICL),
+`tabicl-classifier-v2-20260212.ckpt`, 110 MB) into `weights/` and reads it
+directly. A PyTorch `.ckpt` is a zip of raw float32 tensor files, and the
+committed index `assets/tabicl-classifier-v2.idx` says which file holds which
+tensor. This works in MATLAB (including MATLAB Online), Nelson and RunMat.
+
+Optionally, with Python you can export a single flat weight file, which loads
+slightly faster:
 
 ```sh
 uv venv .venv-ref -p 3.12
@@ -45,7 +53,7 @@ uv pip install --python .venv-ref/bin/python tabicl
 .venv-ref/bin/python tools/export_weights.py   # -> weights/tabicl-classifier-v2.{idx,bin}
 ```
 
-After that Python is no longer needed.
+`tabicl_load` uses `weights/tabicl-classifier-v2.bin` if it exists.
 
 ## Usage
 
@@ -84,7 +92,7 @@ on an already-preprocessed table) and the three stages `tabicl_col_embed`,
 ## Running the tests
 
 The fixtures in `tests/fixtures` (inputs and PyTorch outputs) are committed,
-so the tests only need the exported weights:
+so the tests need neither Python nor a manual weight export:
 
 ```sh
 nelson-cli -f tests/run_tests.m
@@ -98,6 +106,7 @@ run('tests/run_tests.m')          % MATLAB
 * RunMat compiles every `.m` file in the working directory, so start it from
   a directory without unrelated `.m` files.
 * `tools/make_reference.py` regenerates the fixtures from the Python package.
+* `tools/export_weights.py` also regenerates `assets/tabicl-classifier-v2.idx`.
 
 ## Documentation
 
@@ -112,6 +121,7 @@ run('tests/run_tests.m')          % MATLAB
 src/        the implementation (19 functions)
 tests/      run_tests.m, test_forward.m, test_classifier.m, fixtures/
 tools/      export_weights.py, make_reference.py (PyTorch side)
+assets/     tensor index of the Hugging Face checkpoint
 docs/       architecture and portability notes
 example.m   minimal demo
 ```
