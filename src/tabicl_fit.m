@@ -2,6 +2,8 @@ function clf = tabicl_fit(X, y, varargin)
 %TABICL_FIT Fit a TabICL classifier (in-context: stores the preprocessed data).
 %   clf = TABICL_FIT(X, y) with X an [n x p] numeric matrix (NaN allowed)
 %   and y a vector of numeric labels, a string array or a cellstr.
+%   X may also be a table with numeric, categorical, string, cellstr and
+%   logical variables (see TABICL_ENCODE_FIT), and y the name of one of them.
 %
 %   Name-value options (defaults follow tabicl.TabICLClassifier):
 %     'Model'              struct from TABICL_LOAD (loaded on demand if empty)
@@ -47,6 +49,10 @@ if isempty(M)
     M = tabicl_load();
 end
 
+enc = [];
+if isa(X, 'table')
+    [X, y, enc] = tabicl_encode_fit(X, y);
+end
 X = double(X);
 if size(X, 1) ~= numel(y)
     error('tabicl:fit', 'X and y must have the same number of rows.');
@@ -94,6 +100,7 @@ clf = struct();
 clf.model = M;
 clf.classes = classes;
 clf.y = yi;
+clf.encoder = enc;
 clf.fill = fill;
 clf.keep = keep;
 clf.pp = pp;

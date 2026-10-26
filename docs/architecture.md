@@ -8,6 +8,7 @@ training rows, `m` test rows, `T = n + m`, `H` features, `C` classes,
 
 ```
 X, y ──► tabicl_fit ─────────────► clf (preprocessed training data + ensemble)
+              │ table: tabicl_encode_fit (ordinal-encode text columns)
               │ impute, drop constant columns, label-encode y
               │ per norm method: tabicl_preprocess_fit
               ▼
@@ -106,6 +107,22 @@ inference mode.
 
 ## 6. Preprocessing (`tabicl_preprocess_*.m` ← `_sklearn/preprocessing.py`)
 
+A `table` input is first turned into a matrix by `tabicl_encode_fit` /
+`tabicl_encode_transform`, which port `TransformToNumerical` (a
+`ColumnTransformer` with an `OrdinalEncoder`):
+
+* `categorical`, `string`, cellstr and `logical` variables are encoded with
+  the sorted distinct training values (code-point order, so `"Low" < "high"`;
+  a categorical's own category order and unused categories are ignored, as
+  in Python). Missing values and unseen categories become -1.
+* The encoded columns come first, then the numeric variables, each group in
+  table order, as the `ColumnTransformer` outputs them. Other variable
+  types are dropped with a warning.
+* Two deliberate differences: Python drops plain NumPy `bool` columns (it
+  only encodes pandas' nullable `boolean`), maticl encodes `logical`; and
+  sklearn treats `None` in an object column as a category of its own, while
+  maticl has no such value (empty cellstr entries are missing).
+
 `tabicl_fit` first imputes NaNs with the column mean (as `SimpleImputer`)
 and drops columns with a single distinct value (as `UniqueFeatureFilter`).
 Then, for each normalisation method:
@@ -140,7 +157,5 @@ pass its members through the `'Ensemble'` option, as the tests do.
 * More than 10 classes: Python uses mixed-radix label ensembling in the
   column embedder and hierarchical classification in the ICL stage.
   `tabicl_fit` raises an error instead.
-* DataFrame inputs with categorical/string columns (ordinal encoding); pass
-  numeric matrices.
 * KV caching, GPU / mixed precision, fine-tuning and the time-series
   forecaster.

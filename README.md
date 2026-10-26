@@ -29,6 +29,7 @@ same ensemble):
 | iris: max probability error / accuracy (Python 1.000) | 2.1e-6 / 1.000 | 2.1e-6 / 1.000 |
 | wine: max probability error / accuracy (Python 1.000) | 3.8e-7 / 1.000 | 3.8e-7 / 1.000 |
 | breast cancer: max probability error / accuracy (Python 0.9532) | 3.8e-6 / 0.9532 | 3.8e-6 / 0.9532 |
+| mixed-type table: max probability error / accuracy (Python 0.7333) | 3.6e-6 / 0.7333 | 3.6e-6 / 0.7333 |
 | full test suite wall time | 38 s | 21 min |
 
 The remaining differences are float32 rounding (PyTorch computes in float32,
@@ -67,6 +68,13 @@ yhat  = tabicl_predict(clf, Xtest);
 ```
 
 * `X` is a numeric matrix; `NaN` values are mean-imputed.
+* `X` can also be a `table`. Numeric variables pass through; `categorical`,
+  `string`, cellstr and `logical` variables are ordinal-encoded as in
+  Python's `TransformToNumerical`: sorted distinct values become 0, 1, …,
+  and missing values (`<undefined>`, `<missing>`, `''`) and categories unseen
+  in training become -1. `y` may then be a variable name:
+  `tabicl_fit(T, 'label')`. Predict with a table holding the same variable
+  names, in any order. The encoder is stored in `clf.encoder`.
 * `y` can be numeric, a string array or a cellstr, with at most 10 classes.
 * `example.m` is a two-moons demo.
 
@@ -105,7 +113,8 @@ run('tests/run_tests.m')          % MATLAB
 
 * RunMat compiles every `.m` file in the working directory, so start it from
   a directory without unrelated `.m` files.
-* `tools/make_reference.py` regenerates the fixtures from the Python package.
+* `tools/make_reference.py` regenerates the fixtures from the Python package
+  (the mixed-type case also needs `pandas`).
 * `tools/export_weights.py` also regenerates `assets/tabicl-classifier-v2.idx`.
 
 ## Documentation
@@ -118,8 +127,8 @@ run('tests/run_tests.m')          % MATLAB
 ## Layout
 
 ```
-src/        the implementation (19 functions)
-tests/      run_tests.m, test_forward.m, test_classifier.m, fixtures/
+src/        the implementation (22 functions)
+tests/      run_tests.m, test_forward.m, test_classifier.m, test_table.m, fixtures/
 tools/      export_weights.py, make_reference.py (PyTorch side)
 assets/     tensor index of the Hugging Face checkpoint
 docs/       architecture and portability notes
@@ -130,7 +139,7 @@ example.m   minimal demo
 
 * Classification only, at most 10 classes (no regressor, no hierarchical
   many-class mode).
-* Numeric inputs only: encode categorical columns yourself.
+* Tables have been tested on Nelson and RunMat only, not yet on MATLAB.
 * CPU, double precision. Nelson takes about 2 s per ensemble member on a
   400-row, 30-feature table. RunMat is currently about 30× slower because
   of its matrix-multiply speed and per-statement overhead (see

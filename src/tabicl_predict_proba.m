@@ -1,6 +1,7 @@
 function proba = tabicl_predict_proba(clf, X)
 %TABICL_PREDICT_PROBA Class probabilities [m x C] for the rows of X.
-%   Columns follow clf.classes.
+%   Columns follow clf.classes. X is a matrix, or a table if the classifier
+%   was fitted on one.
 M = clf.model;
 ens = clf.ensemble;
 norms = ens.norms;
@@ -13,6 +14,9 @@ keep = clf.keep;
 T = clf.opts.SoftmaxTemperature;
 average_logits = clf.opts.AverageLogits;
 
+if isa(X, 'table')
+    X = tabicl_encode_transform(clf.encoder, X);
+end
 X = double(X);
 for j = 1:size(X, 2)
     X(isnan(X(:, j)), j) = fill(j);
