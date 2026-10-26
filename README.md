@@ -40,6 +40,7 @@ same ensemble):
 | 26 classes, raw forward pass: max probability error | 7.5e-6 | 7.5e-6 |
 | 15 classes (synthetic): max probability error / accuracy (Python 0.8889) | 3.5e-6 / 0.8889 | 3.4e-6 / 0.8889 |
 | diabetes regression: max error of mean / median / quantiles, in units of std(y) | 2.9e-6 / 3.7e-6 / 2.0e-5 | 2.9e-6 / 3.7e-6 / 2.0e-5 |
+| mixed-type table: max probability error / accuracy (Python 0.7333) | 3.6e-6 / 0.7333 | 3.6e-6 / 0.7333 |
 
 The remaining differences are float32 rounding (PyTorch computes in float32,
 maticl in double). Predicted labels agree 100% on all datasets. The two
@@ -47,7 +48,7 @@ many-class rows use more classes than the checkpoint's 10, which goes through
 the many-class strategy (see below). The largest regression error is in the
 extrapolated tail (level 0.9995); inside the predicted quantiles it is below
 4e-6. The full suite takes about a minute on Nelson; on RunMat the tests take
-about 21 min (classification) + 25 min (many-class) + 7.5 min (regression),
+about 21 min (classification) + 25 min (many-class) + 7.5 min (regression) + 1 min (table),
 measured separately.
 
 ## Setup
@@ -87,6 +88,13 @@ yhat  = tabicl_predict(clf, Xtest);
 ```
 
 * `X` is a numeric matrix; `NaN` values are mean-imputed.
+* `X` can also be a `table`. Numeric variables pass through; `categorical`,
+  `string`, cellstr and `logical` variables are ordinal-encoded as in
+  Python's `TransformToNumerical`: sorted distinct values become 0, 1, …,
+  and missing values (`<undefined>`, `<missing>`, `''`) and categories unseen
+  in training become -1. `y` may then be a variable name:
+  `tabicl_fit(T, 'label')`. Predict with a table holding the same variable
+  names, in any order. The encoder is stored in `clf.encoder`.
 * `y` can be numeric, a string array or a cellstr, with any number of
   classes. Beyond 10 (the checkpoint's limit), maticl uses the same
   many-class strategy as Python: mixed-radix label ensembling in the column
@@ -159,7 +167,7 @@ run('tests/run_tests.m')          % MATLAB
   minutes) run only on manual dispatch. The Nelson job is informational:
   the only Linux build is 1.17, which fails (no `strtok`, out of memory).
 * `tools/make_reference.py [clf|reg]` regenerates the fixtures from the
-  Python package.
+  Python package (the mixed-type case also needs `pandas`).
 * `tools/export_weights.py [--model regressor]` also regenerates the index in
   `assets/`.
 
@@ -174,7 +182,8 @@ run('tests/run_tests.m')          % MATLAB
 
 ```
 src/        the implementation (22 functions)
-tests/      run_tests.m, test_forward.m, test_classifier.m, test_regressor.m, fixtures/
+tests/      run_tests.m, test_forward.m, test_classifier.m, test_regressor.m,
+            test_table.m, fixtures/
 tools/      export_weights.py, make_reference.py (PyTorch side)
 assets/     tensor indexes of the Hugging Face checkpoints
 docs/       architecture and portability notes
@@ -185,7 +194,7 @@ example.m   minimal demo
 
 * Regression returns the mean, median and quantiles only (no variance,
   CRPS or log-density).
-* Numeric inputs only: encode categorical columns yourself.
+* Table input has been tested on Nelson and RunMat; MATLAB is covered by CI.
 * CPU, double precision. Nelson takes about 2 s per ensemble member on a
   400-row, 30-feature table. RunMat is currently about 30× slower because
   of its matrix-multiply speed and per-statement overhead (see

@@ -37,6 +37,21 @@ anything. Run it on every changed file.
 | No `fseek` | | read sequentially | RunMat has no `fseek` |
 | `fread(fid, n, 'single')` then `double(...)` | `'float32=>double'` | | Nelson returns wrong values for the `=>` form |
 
+## Tables and categoricals
+
+All three runtimes have `table` and `categorical`, with gaps in RunMat 0.6.2.
+The table code lives in `tabicl_encode_*.m` and only runs when `isa(X,
+'table')`, so the matrix path never touches it. Rules for those files:
+
+| Rule | Instead of | Write | Reason |
+|---|---|---|---|
+| Row count of a table | `size(T, 1)` | `height(T)` | RunMat: a table (and a categorical) is a 1x1 object |
+| Text of a categorical | `categories(c)`, `isundefined(c)`, `c(i)` | `string(c)` + `ismissing` inside `try`; else `c.Categories(c.Codes)` with `isnan(c.Codes)` | RunMat has no `categories`, `isundefined`, `string(c)` or indexing of categoricals; MATLAB has no `c.Codes` |
+| Variable names | | `char(names(k))`, `strcmp(names, n)` | `T.Properties.VariableNames` is a cellstr in MATLAB and Nelson, a string array in RunMat |
+| No `continue` | `if k == skip, continue; end` | `if k ~= skip ... end` | RunMat 0.6.2 re-ran the enclosing script on a `continue` in the last iteration |
+| `try ... catch` without an identifier | `catch err ... err.message` | `catch` | RunMat's checker flags `err` as possibly unassigned |
+| Avoid `properties` as a name | `properties(c)` | | RunMat parses it as a classdef keyword |
+
 ## Performance notes (RunMat 0.6.2)
 
 * **Every statement costs time proportional to the data alive in the current
