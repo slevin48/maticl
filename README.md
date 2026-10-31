@@ -26,6 +26,8 @@ reg = tabicl_fit_regressor(Xtrain, ytrain, 'Model', R);
 [yhat, out] = tabicl_predict_regressor(reg, Xtest);   % mean, median, quantiles
 ```
 
+<p align="center"><img src="docs/img/two_moons.gif" width="480" alt="TabICL decision boundary as the number of in-context training points grows"></p>
+
 ## Results
 
 Compared with the reference Python package (`tabicl` 2.2.0, same checkpoint,
@@ -155,6 +157,14 @@ download. They run in MATLAB and Nelson (plots are skipped in `nelson-cli`).
 | [`examples/vibration_faults.m`](examples/vibration_faults.m) | **Signal processing:** diagnose machine faults (imbalance, misalignment, bearing defect) from vibration recordings, via statistical, order and envelope-spectrum features computed with `fft` | 0.950 accuracy on 160 test recordings, 4 classes |
 | [`examples/load_forecasting.m`](examples/load_forecasting.m) | **Time series:** day-ahead hourly electricity-demand forecast with the regressor on calendar and lag features, with 90% prediction intervals | MAE 5.0 vs 9.1 for the seasonal-naive forecast |
 | [`examples/two_moons.m`](examples/two_moons.m) | minimal classification | 0.990 accuracy |
+
+<p align="center">
+<img src="docs/img/vibration_faults.gif" width="49%" alt="Vibration recordings, their spectra and TabICL class probabilities">
+<img src="docs/img/load_forecasting.gif" width="49%" alt="Day-ahead demand forecast with 90% prediction interval">
+</p>
+
+The animations are rendered with MATLAB by `tools/make_gifs.m` (run on
+demand by the `gifs` workflow).
 
 The forecasting example turns forecasting into tabular regression, using
 only lags of at least 24 hours so that a whole day is predicted at once. The
