@@ -6,7 +6,9 @@
 % a full distribution per hour, so the forecast comes with quantiles.
 
 here = fileparts(mfilename('fullpath'));
-addpath(fullfile(here, '..', 'src'));
+if isempty(which('tabicl_fit'))              % not installed: use this clone
+    addpath(fullfile(here, '..', 'src'));
+end
 rng(2);
 
 %% Simulate 9 weeks of hourly demand

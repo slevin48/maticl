@@ -7,7 +7,9 @@
 % the analytic signal are computed with fft.
 
 here = fileparts(mfilename('fullpath'));
-addpath(fullfile(here, '..', 'src'));
+if isempty(which('tabicl_fit'))              % not installed: use this clone
+    addpath(fullfile(here, '..', 'src'));
+end
 rng(1);
 
 %% Simulate the recordings

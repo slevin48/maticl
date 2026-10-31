@@ -1,0 +1,119 @@
+name: package
+
+# Builds the toolbox (.mltbx) and the MATLAB Package Manager package with
+# tools/build_toolbox.m, then installs each one in a fresh MATLAB and runs an
+# example without addpath. On a v* tag, attaches both to the GitHub release.
+on:
+  push:
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+    paths:
+      - "resources/**"
+      - "tools/build_toolbox.m"
+      - "src/tabicl_load.m"
+      - ".github/workflows/package.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Hugging Face revision of the checkpoints, as in src/tabicl_load.m
+  CKPT_REV: 4dcd344ece2c00be9e831fdd35bed57b5ad83e19
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: matlab-actions/setup-matlab@v3
+        with:
+          cache: true
+      - name: Build
+        env:
+          MATICL_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+        uses: matlab-actions/run-command@v3
+        with:
+          command: run('tools/build_toolbox.m')
+      - run: cat resources/mpackage.json
+      - uses: actions/upload-artifact@v5
+        with:
+          name: package
+          path: |
+            build/*.mltbx
+            build/*.zip
+            resources/mpackage.json
+
+  # Each install runs in its own job, so that one cannot leave maticl on the
+  # path for the other. The installed loader would download the checkpoint
+  # into prefdir: MATICL_WEIGHTS points it at the cached copy instead.
+  install:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        kind: [mltbx, mpm]
+    env:
+      MATICL_WEIGHTS: ${{ github.workspace }}/weights
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: assets
+      - uses: actions/cache/restore@v6
+        with:
+          path: weights
+          key: tabicl-weights-${{ env.CKPT_REV }}-${{ hashFiles('assets/*.idx') }}
+      - uses: actions/download-artifact@v5
+        with:
+          name: package
+          path: dist
+      - uses: matlab-actions/setup-matlab@v3
+        with:
+          cache: true
+      - if: matrix.kind == 'mltbx'
+        uses: matlab-actions/run-command@v3
+        with:
+          command: |
+            f = dir('dist/build/*.mltbx');
+            matlab.addons.install(fullfile(f.folder, f.name));
+      - if: matrix.kind == 'mpm'
+        uses: matlab-actions/run-command@v3
+        with:
+          command: |
+            f = dir('dist/build/*.zip');
+            repo = fullfile(tempdir, 'maticl-repo');
+            unzip(fullfile(f.folder, f.name), repo);
+            mpmAddRepository("maticl-ci", repo);
+            mpminstall("maticl", Prompt=false);
+      # a new MATLAB session, outside the checkout
+      - uses: matlab-actions/run-command@v3
+        with:
+          command: |
+            cd(tempdir);
+            where = which('tabicl_fit');
+            assert(~isempty(where), 'maticl is not on the path');
+            disp(where);
+            run(fullfile(fileparts(fileparts(where)), 'examples', 'two_moons.m'));
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: install
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: package
+          path: dist
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 ||
+            gh release create "$TAG" -R "$GITHUB_REPOSITORY" --title "maticl $TAG" --generate-notes
+          gh release upload "$TAG" -R "$GITHUB_REPOSITORY" --clobber dist/build/*.mltbx dist/build/*.zip

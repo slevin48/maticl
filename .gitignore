@@ -4,3 +4,4 @@ __pycache__/
 .runmat/
 .DS_Store
 .claude/
+build/

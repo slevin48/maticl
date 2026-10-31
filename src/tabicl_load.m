@@ -1,11 +1,16 @@
 function M = tabicl_load(varargin)
 %TABICL_LOAD Load a pretrained TabICL v2 model into a MATLAB struct.
 %   M = TABICL_LOAD() loads the classifier. It uses
-%   weights/tabicl-classifier-v2.{idx,bin} from the repository root if they
-%   exist (see tools/export_weights.py). Otherwise it downloads the official
-%   checkpoint from Hugging Face (about 110 MB, once) into weights/, unzips it
-%   and reads the tensors directly, using the committed index
-%   assets/tabicl-classifier-v2.idx. No Python is needed.
+%   tabicl-classifier-v2.{idx,bin} from the weights folder if they exist
+%   (see tools/export_weights.py). Otherwise it downloads the official
+%   checkpoint from Hugging Face (about 110 MB, once) into the weights
+%   folder, unzips it and reads the tensors directly, using the committed
+%   index assets/tabicl-classifier-v2.idx. No Python is needed.
+%
+%   The weights folder is $MATICL_WEIGHTS if that is set, weights/ next to
+%   src/ in a clone of the repository, and otherwise (an installed toolbox
+%   or package, whose folder may be read-only or replaced on upgrade)
+%   maticl/weights in the MATLAB preferences folder, prefdir.
 %
 %   M = TABICL_LOAD('regressor') loads the regressor checkpoint in the same
 %   way (weights/ or assets/tabicl-regressor-v2.idx), for TABICL_FIT_REGRESSOR.
@@ -16,6 +21,7 @@ function M = tabicl_load(varargin)
 %   1-D tensors become row vectors and 2-D [out x in] PyTorch weights become
 %   [in x out], so that y = x * W + b.
 root = fileparts(fileparts(which('tabicl_load')));
+wdir = weights_dir(root);
 src = struct();
 kind = 'classifier';
 prefix = '';
@@ -30,7 +36,7 @@ end
 model_name = ['tabicl-' kind '-v2'];
 use_bin = true;
 if isempty(prefix)
-    prefix = fullfile(root, 'weights', model_name);
+    prefix = fullfile(wdir, model_name);
     use_bin = exist([prefix '.bin'], 'file') > 0;
 end
 if use_bin
@@ -72,7 +78,7 @@ end
 % have no bias (bias_free_ln)
 src.datadir = '';
 if ~use_bin
-    src.datadir = fetch_checkpoint(fullfile(root, 'weights'), archive, [model_name '-20260212']);
+    src.datadir = fetch_checkpoint(wdir, archive, [model_name '-20260212']);
 end
 
 % Tensors follow in state_dict order and are read group by group (one
@@ -195,6 +201,20 @@ if numel(dims) == 1
 else
     t = reshape(t, fliplr(dims));
 end
+end
+
+function d = weights_dir(root)
+% Where the checkpoints are kept (see the help above). A clone has .git, a
+% file in a git worktree; runtimes without prefdir (RunMat) use weights/..
+d = getenv('MATICL_WEIGHTS');
+if ~isempty(d)
+    return;
+end
+d = fullfile(root, 'weights');
+if exist(d, 'dir') > 0 || exist(fullfile(root, '.git')) > 0 || exist('prefdir') == 0
+    return;
+end
+d = fullfile(feval('prefdir'), 'maticl', 'weights');   % feval: RunMat has no prefdir
 end
 
 function datadir = fetch_checkpoint(weights_dir, archive, name)
