@@ -67,35 +67,32 @@ jobs:
         with:
           path: weights
           key: tabicl-weights-${{ env.CKPT_REV }}-${{ hashFiles('assets/*.idx') }}
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           name: package
           path: dist
       - uses: matlab-actions/setup-matlab@v3
         with:
           cache: true
-      - if: matrix.kind == 'mltbx'
-        uses: matlab-actions/run-command@v3
-        with:
-          command: |
-            f = dir('dist/build/*.mltbx');
-            matlab.addons.install(fullfile(f.folder, f.name));
-      - if: matrix.kind == 'mpm'
-        uses: matlab-actions/run-command@v3
-        with:
-          command: |
-            f = dir('dist/build/*.zip');
-            repo = fullfile(tempdir, 'maticl-repo');
-            unzip(fullfile(f.folder, f.name), repo);
-            mpmAddRepository("maticl-ci", repo);
-            mpminstall("maticl", Prompt=false);
-      # a new MATLAB session, outside the checkout
+      # install, then run an example from the installed copy in the same
+      # session (the runner keeps no MATLAB user folder between sessions)
       - uses: matlab-actions/run-command@v3
         with:
           command: |
+            if "${{ matrix.kind }}" == "mltbx"
+                f = dir('dist/build/*.mltbx');
+                matlab.addons.install(fullfile(f.folder, f.name));
+            else
+                f = dir('dist/build/*.zip');
+                repo = fullfile(tempdir, 'maticl-repo');
+                unzip(fullfile(f.folder, f.name), repo);
+                mpmAddRepository("maticl-ci", repo);
+                mpminstall("maticl", Prompt=false);
+            end
             cd(tempdir);
             where = which('tabicl_fit');
             assert(~isempty(where), 'maticl is not on the path');
+            assert(~startsWith(where, getenv('GITHUB_WORKSPACE')), 'maticl found in the checkout');
             disp(where);
             run(fullfile(fileparts(fileparts(where)), 'examples', 'two_moons.m'));
 
@@ -106,7 +103,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           name: package
           path: dist

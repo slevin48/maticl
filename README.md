@@ -53,12 +53,45 @@ extrapolated tail (level 0.9995); inside the predicted quantiles it is below
 about 21 min (classification) + 25 min (many-class) + 7.5 min (regression) + 1 min (table),
 measured separately.
 
+## Install
+
+**From a clone (any runtime).** Nothing to install: `addpath src`, or in
+MATLAB R2024b and later register the clone as a package with the
+[MATLAB Package Manager](https://www.mathworks.com/help/matlab/mpm.html):
+
+```matlab
+mpminstall("path/to/maticl", InPlace=true)   % adds src/ to the path, in place
+```
+
+**Toolbox (MATLAB).** Download `maticl-<version>.mltbx` from the
+[releases](https://github.com/yanndebray/maticl/releases) and open it, or
+`matlab.addons.install("maticl-<version>.mltbx")`.
+
+**Package repository (MATLAB R2024b+).** Each release also has
+`maticl-<version>.zip`, a package folder. Unzip it into a folder that serves
+as a package repository (a shared drive works for a team), then:
+
+```matlab
+mpmAddRepository("maticl", "path/to/repository")
+mpminstall("maticl")
+```
+
+`mpminstall` takes a package folder, a package name from a known repository,
+or a package object, not a Git URL.
+
+Installed copies keep the downloaded checkpoints in
+`fullfile(prefdir, 'maticl', 'weights')`, so they survive upgrades; a clone
+keeps them in `weights/`. Set the environment variable `MATICL_WEIGHTS` to
+use another folder. `tools/build_toolbox.m` builds both files; CI
+([package.yml](.github/workflows/package.yml)) installs each one in a fresh
+MATLAB, runs an example without `addpath`, and attaches them to `v*` releases.
+
 ## Setup
 
-Nothing to install. On first use `tabicl_load()` downloads the official
+Nothing else to set up. On first use `tabicl_load()` downloads the official
 checkpoint from Hugging Face
 ([jingang/TabICL](https://huggingface.co/jingang/TabICL),
-`tabicl-classifier-v2-20260212.ckpt`, 110 MB) into `weights/` and reads it
+`tabicl-classifier-v2-20260212.ckpt`, 110 MB) into the weights folder and reads it
 directly. A PyTorch `.ckpt` is a zip of raw float32 tensor files, and the
 committed index `assets/tabicl-classifier-v2.idx` says which file holds which
 tensor. This works in MATLAB (including MATLAB Online), Nelson and RunMat.
@@ -210,7 +243,9 @@ run('tests/run_tests.m')          % MATLAB
 src/        the implementation (25 functions)
 tests/      run_tests.m, test_forward.m, test_classifier.m, test_regressor.m,
             test_table.m, fixtures/
-tools/      export_weights.py, make_reference.py (PyTorch side)
+tools/      export_weights.py, make_reference.py (PyTorch side),
+            build_toolbox.m (packaging), make_gifs.m (README animations)
+resources/  mpackage.json, the MATLAB Package Manager definition
 assets/     tensor indexes of the Hugging Face checkpoints
 docs/       architecture and portability notes
 examples/   vibration fault diagnosis, load forecasting, two moons
