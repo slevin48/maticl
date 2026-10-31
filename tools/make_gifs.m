@@ -111,10 +111,21 @@ fprintf('GIFs written to %s\n', outdir);
 
 function write_frame(fig, file, first, delay)
 % Append the figure to an animated GIF (exportgraphics works headless).
+% Every frame is padded or cropped to the size of the first one, since GIF
+% frames of different sizes do not line up.
+persistent sz
 png = [tempname '.png'];
-exportgraphics(fig, png, 'Resolution', 96);
-[A, map] = rgb2ind(imread(png), 128, 'nodither');
+exportgraphics(fig, png, 'Resolution', 96, 'Padding', 'figure');
+img = imread(png);
 delete(png);
+if first
+    sz = size(img, [1 2]);
+end
+out = 255 * ones(sz(1), sz(2), 3, 'uint8');
+h = min(sz(1), size(img, 1));
+w = min(sz(2), size(img, 2));
+out(1:h, 1:w, :) = img(1:h, 1:w, :);
+[A, map] = rgb2ind(out, 128, 'nodither');
 if first
     imwrite(A, map, file, 'gif', 'LoopCount', Inf, 'DelayTime', delay);
 else
