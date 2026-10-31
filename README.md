@@ -1,7 +1,7 @@
 # maticl: TabICL in pure MATLAB
 
-[![tests](https://github.com/slevin48/maticl/actions/workflows/tests.yml/badge.svg)](https://github.com/slevin48/maticl/actions/workflows/tests.yml)
-[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=slevin48/maticl&file=examples/vibration_faults.m)
+[![tests](https://github.com/yanndebray/maticl/actions/workflows/tests.yml/badge.svg)](https://github.com/yanndebray/maticl/actions/workflows/tests.yml)
+[![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=yanndebray/maticl&file=examples/vibration_faults.m)
 
 A port of [TabICL](https://github.com/soda-inria/tabicl) v2, the tabular
 in-context-learning foundation model from Inria's Soda team, to plain MATLAB
