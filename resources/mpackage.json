@@ -1,0 +1,35 @@
+{
+    "name": "maticl",
+    "version": "0.1.0",
+    "id": "c1250ebe-6bf0-492c-a465-18ef1ac70bbc",
+    "formerNames": [],
+    "displayName": "maticl",
+    "summary": "TabICL v2 tabular foundation model (classification and regression) in pure MATLAB",
+    "tags": [],
+    "readme": "README.md",
+    "provider": {
+        "name": "maticl contributors",
+        "organization": "",
+        "email": "",
+        "url": "https://github.com/yanndebray/maticl"
+    },
+    "folders": [
+        {
+            "path": "src",
+            "languages": [
+                "matlab"
+            ]
+        }
+    ],
+    "dependencies": [],
+    "releaseCompatibility": "",
+    "supportedPlatforms": [
+        {
+            "platform": "any",
+            "architectures": [
+                "any"
+            ]
+        }
+    ],
+    "schemaVersion": "1.2.0"
+}
