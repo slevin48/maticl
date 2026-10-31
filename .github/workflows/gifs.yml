@@ -1,0 +1,35 @@
+name: gifs
+
+# Renders the README animations with MATLAB (tools/make_gifs.m) and uploads
+# them as a workflow artifact, to be committed to docs/img. On demand only.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Hugging Face revision of the checkpoints, as in src/tabicl_load.m
+  CKPT_REV: 4dcd344ece2c00be9e831fdd35bed57b5ad83e19
+
+jobs:
+  gifs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+      # weights cached by the tests workflow; tabicl_load downloads them on a miss
+      - uses: actions/cache/restore@v6
+        with:
+          path: weights
+          key: tabicl-weights-${{ env.CKPT_REV }}-${{ hashFiles('assets/*.idx') }}
+      - uses: matlab-actions/setup-matlab@v3
+        with:
+          cache: true
+      - uses: matlab-actions/run-command@v3
+        with:
+          command: run('tools/make_gifs.m')
+      - uses: actions/upload-artifact@v5
+        with:
+          name: gifs
+          path: docs/img/*.gif
